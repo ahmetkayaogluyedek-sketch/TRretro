@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TRRetro - 50 Oyunlu Retro Arcade Merkezi</title>
+  <title>TRRetro - 23 Oyunlu Retro Arcade Merkezi</title>
   <style>
     :root {
       --bg: #070913;
@@ -179,6 +179,7 @@
       width: 100%;
       height: 100%;
       display: block;
+      cursor: pointer;
     }
 
     .crt-overlay {
@@ -403,6 +404,7 @@
     <section class="card" id="oyun-kabini">
       <div class="hud">
         <div class="hud-item">Oyun: <strong id="activeGameTitle">Süper Yılan</strong></div>
+        <div class="hud-item">Durum: <strong id="statusVal">HAZIR</strong></div>
         <div class="hud-item">Skor: <strong id="scoreVal">0</strong></div>
         <div class="hud-item">En İyi: <strong id="bestVal">0</strong></div>
         <div class="hud-item">Jeton: <strong id="coinCount">3</strong></div>
@@ -430,7 +432,7 @@
       </div>
 
       <div class="hint" id="controlHint">
-        Klavye: Yön Tuşları / WASD ile hareket, Boşluk ile aksiyon.
+        Klavye: Yön Tuşları / WASD ile hareket, Boşluk ile aksiyon. Başlat butonuna basınca oyun sıfırlanıp başlar.
       </div>
     </section>
 
@@ -455,13 +457,13 @@
     <section class="card catalog-card">
       <div class="catalog-top">
         <div class="filters" id="categoryFilters">
-          <button type="button" class="btn btn-cyan" data-cat="Tümü">Tümü (50)</button>
+          <button type="button" class="btn btn-cyan" data-cat="Tümü">Tümü (23)</button>
           <button type="button" class="btn" data-cat="Arcade">Arcade</button>
           <button type="button" class="btn" data-cat="Aksiyon">Aksiyon</button>
           <button type="button" class="btn" data-cat="Bulmaca">Bulmaca</button>
           <button type="button" class="btn" data-cat="Refleks">Refleks</button>
         </div>
-        <input type="search" class="search-input" id="gameSearch" placeholder="50 oyun içinde ara..." />
+        <input type="search" class="search-input" id="gameSearch" placeholder="23 oyun içinde ara..." />
       </div>
 
       <div class="game-grid" id="gameGrid"></div>
@@ -489,48 +491,16 @@
       { id: "catcher", name: "Yıldız Toplayıcı", cat: "Arcade" },
       { id: "shooter_x", name: "Galaksi Avcısı", cat: "Aksiyon" },
       { id: "maze_dash", name: "Labirent Koşusu", cat: "Bulmaca" },
-      { id: "reflex_box", name: "Hızlı Refleks", cat: "Refleks" }
+      { id: "reflex_box", name: "Hızlı Refleks", cat: "Refleks" },
+      { id: "cyber_jump", name: "Siber Zıplama", cat: "Arcade" },
+      { id: "laser_grid", name: "Lazer Izgara", cat: "Aksiyon" },
+      { id: "pixel_golf", name: "Piksel Golf", cat: "Bulmaca" },
+      { id: "turbo_lane", name: "Otoban Yarışı", cat: "Refleks" },
+      { id: "star_guard", name: "Yıldız Kalkanı", cat: "Aksiyon" },
+      { id: "tile_flip", name: "Karo Çevirme", cat: "Bulmaca" },
+      { id: "nova_blast", name: "Nova Patlaması", cat: "Aksiyon" },
+      { id: "aim_pulse", name: "Hedef Vuruşu", cat: "Refleks" }
     ];
-
-    const EXTRA_TITLES = [
-      ["cyber_jump", "Siber Zıplama", "Arcade"],
-      ["laser_grid", "Lazer Izgara", "Aksiyon"],
-      ["pixel_golf", "Piksel Golf", "Bulmaca"],
-      ["turbo_lane", "Otoban Yarışı", "Refleks"],
-      ["star_guard", "Yıldız Kalkanı", "Aksiyon"],
-      ["tile_flip", "Karo Çevirme", "Bulmaca"],
-      ["nova_blast", "Nova Patlaması", "Aksiyon"],
-      ["aim_pulse", "Hedef Vuruşu", "Refleks"],
-      ["coin_rush", "Altın Avı", "Arcade"],
-      ["wall_hop", "Duvar Sekmesi", "Refleks"],
-      ["orbit_ship", "Yörünge Gemisi", "Aksiyon"],
-      ["logic_pair", "Mantık Eşleştirme", "Bulmaca"],
-      ["dash_runner", "Atılgan Koşucu", "Refleks"],
-      ["crystal_hit", "Kristal Kırıcı", "Arcade"],
-      ["shadow_evade", "Gölge Kaçış", "Aksiyon"],
-      ["number_pop", "Sayı Patlatma", "Bulmaca"],
-      ["sonic_tap", "Sonik Dokunuş", "Refleks"],
-      ["moon_lander", "Ay İnişi", "Arcade"],
-      ["plasma_wave", "Plazma Dalgası", "Aksiyon"],
-      ["grid_lock", "Izgara Kilidi", "Bulmaca"],
-      ["speed_gate", "Hız Kapısı", "Refleks"],
-      ["alien_swarm", "Uzay Sürüsü", "Aksiyon"],
-      ["mega_pong", "Mega Tenis", "Arcade"],
-      ["flash_match", "Flaş Eşleşme", "Refleks"],
-      ["prism_break", "Prizma Kırma", "Arcade"],
-      ["rocket_lane", "Roket Şeridi", "Aksiyon"],
-      ["code_tap", "Kod Tıklama", "Bulmaca"],
-      ["hyper_dodge", "Hiper Kaçış", "Refleks"],
-      ["star_miner", "Yıldız Madenci", "Arcade"],
-      ["drone_strike", "Dron Saldırısı", "Aksiyon"],
-      ["shift_puzzle", "Kaydırmalı Bulmaca", "Bulmaca"],
-      ["beat_reflex", "Ritim Refleksi", "Refleks"],
-      ["void_drift", "Boşluk Sürüşü", "Arcade"],
-      ["turret_def", "Kule Savunması", "Aksiyon"],
-      ["pair_blitz", "Hızlı Kart", "Bulmaca"]
-    ];
-
-    EXTRA_TITLES.forEach(([id, name, cat]) => GAMES.push({ id, name, cat }));
 
     const STORAGE_KEY = "trretro_highscores_v1";
     const NAME_KEY = "trretro_playername_v1";
@@ -542,8 +512,10 @@
     let searchQuery = "";
     let activeGame = GAMES[0];
     let score = 0;
+    let gameRunning = false;
     let gameOver = false;
     let toastTimer = null;
+    let tickCount = 0;
 
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -562,7 +534,7 @@
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         const now = audioCtx.currentTime;
-        const freqs = { select: 520, coin: 880, point: 660, hit: 170 };
+        const freqs = { select: 520, coin: 880, point: 660, hit: 170, start: 740 };
         osc.type = type === "hit" ? "sawtooth" : "square";
         osc.frequency.setValueAtTime(freqs[type] || 440, now);
         gain.gain.setValueAtTime(0.06, now);
@@ -643,6 +615,9 @@
 
     function updateHud() {
       document.getElementById("activeGameTitle").textContent = activeGame.name;
+      const statusEl = document.getElementById("statusVal");
+      statusEl.textContent = gameOver ? "BİTTİ" : (gameRunning ? "OYNANIYOR" : "HAZIR");
+      statusEl.style.color = gameOver ? "#ff2a85" : (gameRunning ? "#00f5d4" : "#ffd166");
       document.getElementById("scoreVal").textContent = Math.floor(score);
       const all = loadAllScores();
       const best = (all[activeGame.id] && all[activeGame.id][0] && all[activeGame.id][0].score) || 0;
@@ -665,16 +640,23 @@
 
     let pongY = 200;
     let aiY = 200;
-    let ball = { x: 320, y: 240, vx: 4, vy: 3 };
+    let ball = { x: 320, y: 240, vx: 4.5, vy: 3.2 };
 
     let dodgeX = 320;
     let meteors = [];
 
-    let targetBox = { x: 260, y: 180, size: 70 };
+    let birdY = 220;
+    let birdVy = 0;
+    let pipes = [];
 
-    function initCurrentGame() {
+    let targetBox = { x: 240, y: 180, size: 76, pulse: 0 };
+
+    function resetGameState(autoStart) {
       score = 0;
+      tickCount = 0;
       gameOver = false;
+      gameRunning = Boolean(autoStart);
+
       const extraBtn = document.getElementById("extraModeBtn");
       extraBtn.style.display = activeGame.id === "xox" ? "inline-block" : "none";
       if (activeGame.id === "xox") {
@@ -700,36 +682,54 @@
       } else if (activeGame.id === "dodge") {
         dodgeX = 320;
         meteors = [];
+      } else if (activeGame.id === "flappy") {
+        birdY = 220;
+        birdVy = 0;
+        pipes = [{ x: 460, gapY: 200 }];
       } else {
-        targetBox = { x: 120, y: 120, size: 76 };
+        targetBox = { x: 220, y: 170, size: 76, pulse: 0 };
       }
+
       updateHud();
+      renderFrame();
+    }
+
+    function startOrRestartGame() {
+      resetGameState(true);
+      playSound("start");
+      showToast("OYUN BAŞLADI", activeGame.name + " aktif!");
     }
 
     function finishGame(finalScore) {
       if (gameOver) return;
       gameOver = true;
+      gameRunning = false;
       playSound("hit");
       saveScore(activeGame.id, finalScore);
+      updateHud();
       showToast("OYUN BİTTİ", activeGame.name + " skorun: " + Math.floor(finalScore));
     }
 
     function handleDirection(dir) {
+      if (!gameRunning && !gameOver) {
+        resetGameState(true);
+      }
       if (gameOver) return;
+
       if (activeGame.id === "snake") {
         if (dir === "up" && snakeDir.y !== 1) snakeDir = { x: 0, y: -1 };
         if (dir === "down" && snakeDir.y !== -1) snakeDir = { x: 0, y: 1 };
         if (dir === "left" && snakeDir.x !== 1) snakeDir = { x: -1, y: 0 };
         if (dir === "right" && snakeDir.x !== -1) snakeDir = { x: 1, y: 0 };
       } else if (activeGame.id === "pong") {
-        if (dir === "up") pongY = Math.max(10, pongY - 34);
-        if (dir === "down") pongY = Math.min(canvas.height - 90, pongY + 34);
+        if (dir === "up") pongY = Math.max(10, pongY - 36);
+        if (dir === "down") pongY = Math.min(canvas.height - 90, pongY + 36);
       } else if (activeGame.id === "dodge") {
-        if (dir === "left") dodgeX = Math.max(24, dodgeX - 36);
-        if (dir === "right") dodgeX = Math.min(canvas.width - 24, dodgeX + 36);
+        if (dir === "left") dodgeX = Math.max(24, dodgeX - 38);
+        if (dir === "right") dodgeX = Math.min(canvas.width - 24, dodgeX + 38);
       } else {
-        const step = 28;
-        if (dir === "up") targetBox.y = Math.max(20, targetBox.y - step);
+        const step = 30;
+        if (dir === "up") targetBox.y = Math.max(60, targetBox.y - step);
         if (dir === "down") targetBox.y = Math.min(canvas.height - targetBox.size - 20, targetBox.y + step);
         if (dir === "left") targetBox.x = Math.max(20, targetBox.x - step);
         if (dir === "right") targetBox.x = Math.min(canvas.width - targetBox.size - 20, targetBox.x + step);
@@ -750,9 +750,19 @@
 
     function handleAction() {
       if (gameOver) {
-        initCurrentGame();
+        startOrRestartGame();
         return;
       }
+      if (!gameRunning) {
+        resetGameState(true);
+      }
+
+      if (activeGame.id === "flappy") {
+        birdVy = -6.8;
+        playSound("point");
+        return;
+      }
+
       if (activeGame.id === "xox") {
         const emptyIdx = xoxBoard.findIndex((v) => !v);
         if (emptyIdx === -1) return;
@@ -805,20 +815,20 @@
         updateHud();
       } else {
         score += 10;
+        targetBox.pulse = 1;
         playSound("point");
         targetBox.x = 40 + Math.floor(Math.random() * (canvas.width - 140));
-        targetBox.y = 60 + Math.floor(Math.random() * (canvas.height - 140));
+        targetBox.y = 75 + Math.floor(Math.random() * (canvas.height - 155));
         updateHud();
       }
     }
 
-    let tickCount = 0;
     function stepSimulation() {
-      if (gameOver) return;
+      if (!gameRunning || gameOver) return;
       tickCount++;
 
       if (activeGame.id === "snake") {
-        if (tickCount % 8 === 0) {
+        if (tickCount % 7 === 0) {
           const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
           const cols = Math.floor(canvas.width / 20);
           const rows = Math.floor(canvas.height / 20);
@@ -843,7 +853,7 @@
         ball.x += ball.vx;
         ball.y += ball.vy;
         if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
-        aiY += (ball.y - (aiY + 40)) * 0.06;
+        aiY += (ball.y - (aiY + 40)) * 0.065;
         if (ball.x < 36 && ball.y > pongY && ball.y < pongY + 80) {
           ball.vx = Math.abs(ball.vx) + 0.15;
           score += 10;
@@ -857,11 +867,11 @@
           finishGame(score);
         }
       } else if (activeGame.id === "dodge") {
-        if (tickCount % 26 === 0) {
+        if (tickCount % 24 === 0) {
           meteors.push({ x: 30 + Math.random() * (canvas.width - 60), y: -15, r: 14 });
         }
         for (let i = meteors.length - 1; i >= 0; i--) {
-          meteors[i].y += 4.2;
+          meteors[i].y += 4.5;
           const dx = meteors[i].x - dodgeX;
           const dy = meteors[i].y - (canvas.height - 42);
           if (Math.hypot(dx, dy) < meteors[i].r + 16) {
@@ -874,6 +884,34 @@
             updateHud();
           }
         }
+      } else if (activeGame.id === "flappy") {
+        birdVy += 0.36;
+        birdY += birdVy;
+        if (birdY < 10 || birdY > canvas.height - 10) {
+          finishGame(score);
+          return;
+        }
+        if (tickCount % 95 === 0) {
+          pipes.push({ x: canvas.width + 20, gapY: 110 + Math.random() * 240, passed: false });
+        }
+        for (let i = pipes.length - 1; i >= 0; i--) {
+          pipes[i].x -= 3.2;
+          const hitX = Math.abs(pipes[i].x - 140) < 26;
+          const hitGap = Math.abs(birdY - pipes[i].gapY) > 62;
+          if (hitX && hitGap) {
+            finishGame(score);
+            return;
+          }
+          if (!pipes[i].passed && pipes[i].x < 140) {
+            pipes[i].passed = true;
+            score += 10;
+            playSound("point");
+            updateHud();
+          }
+          if (pipes[i].x < -40) pipes.splice(i, 1);
+        }
+      } else if (targetBox.pulse > 0) {
+        targetBox.pulse = Math.max(0, targetBox.pulse - 0.1);
       }
     }
 
@@ -947,18 +985,41 @@
           ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
           ctx.fill();
         });
+      } else if (activeGame.id === "flappy") {
+        ctx.fillStyle = "#ffd166";
+        ctx.beginPath();
+        ctx.arc(140, birdY, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#00f5d4";
+        pipes.forEach((p) => {
+          ctx.fillRect(p.x - 20, 0, 40, p.gapY - 62);
+          ctx.fillRect(p.x - 20, p.gapY + 62, 40, canvas.height - (p.gapY + 62));
+        });
       } else {
-        ctx.fillStyle = "rgba(0, 245, 212, 0.18)";
-        ctx.strokeStyle = "#00f5d4";
+        ctx.fillStyle = targetBox.pulse > 0 ? "rgba(255, 42, 133, 0.35)" : "rgba(0, 245, 212, 0.18)";
+        ctx.strokeStyle = targetBox.pulse > 0 ? "#ff2a85" : "#00f5d4";
         ctx.lineWidth = 2;
         ctx.fillRect(targetBox.x, targetBox.y, targetBox.size, targetBox.size);
         ctx.strokeRect(targetBox.x, targetBox.y, targetBox.size, targetBox.size);
         ctx.fillStyle = "#eef2ff";
-        ctx.font = "bold 15px sans-serif";
+        ctx.font = "bold 16px sans-serif";
         ctx.fillText(activeGame.name, 20, 32);
         ctx.fillStyle = "#94a3b8";
         ctx.font = "13px sans-serif";
-        ctx.fillText("Aksiyon / Boşluk ile puan topla veya yön tuşlarıyla hedefi hareket ettir!", 20, 54);
+        ctx.fillText("Boşluk / Aksiyon ile puan al veya yön tuşlarıyla hedefi taşı!", 20, 54);
+      }
+
+      if (!gameRunning && !gameOver) {
+        ctx.fillStyle = "rgba(5, 7, 15, 0.65)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#00f5d4";
+        ctx.font = "bold 28px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(activeGame.name.toUpperCase(), canvas.width / 2, canvas.height / 2 - 14);
+        ctx.fillStyle = "#ffd166";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("Başlamak için 'Başlat / Yeniden' butonuna veya ekrana tıkla", canvas.width / 2, canvas.height / 2 + 18);
+        ctx.textAlign = "start";
       }
 
       if (gameOver) {
@@ -1000,8 +1061,8 @@
       playSound("select");
       renderCatalog();
       renderLeaderboard();
-      initCurrentGame();
-      showToast("OYUN YÜKLENDİ", activeGame.name);
+      resetGameState(false);
+      showToast("OYUN SEÇİLDİ", activeGame.name);
     }
 
     document.getElementById("coinBtn").addEventListener("click", () => {
@@ -1023,10 +1084,14 @@
       e.currentTarget.textContent = soundOn ? "🔊 Ses: AÇIK" : "🔇 Ses: KAPALI";
     });
 
-    document.getElementById("startBtn").addEventListener("click", () => {
-      playSound("select");
-      initCurrentGame();
-      showToast("BAŞLADI", activeGame.name + " hazır!");
+    document.getElementById("startBtn").addEventListener("click", startOrRestartGame);
+
+    canvas.addEventListener("click", () => {
+      if (!gameRunning || gameOver) {
+        startOrRestartGame();
+      } else {
+        handleAction();
+      }
     });
 
     document.getElementById("actionBtn").addEventListener("click", handleAction);
@@ -1035,7 +1100,7 @@
       if (activeGame.id === "xox") {
         xoxVsCpu = !xoxVsCpu;
         e.currentTarget.textContent = xoxVsCpu ? "Mod: 1P vs CPU" : "Mod: 2 Kişilik";
-        initCurrentGame();
+        resetGameState(true);
         showToast("XOX MODU", xoxVsCpu ? "Yapay zekaya karşı" : "2 Kişilik mod");
       }
     });
@@ -1084,7 +1149,7 @@
     document.getElementById("playerNameInput").value = getPlayerName();
     renderCatalog();
     renderLeaderboard();
-    initCurrentGame();
+    resetGameState(false);
 
     setInterval(() => {
       stepSimulation();
