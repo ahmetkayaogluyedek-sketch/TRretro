@@ -887,6 +887,11 @@
         /* ==========================================================================
            4. ARCADE ENGINE & 18 PLAYABLE MINI-GAMES
            ========================================================================== */
+        function selectAndScroll(gameId) {
+            switchGame(gameId);
+            document.getElementById('oyun-kabini')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         const canvas = document.getElementById('arcadeCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -1304,6 +1309,21 @@
         /* --------------------------------------------------------------------------
            MINI-GAME D: NEON XOX (TIC-TAC-TOE - CPU / 2P)
            -------------------------------------------------------------------------- */
+        // Eksik olan ilk üç oyunun temel işleyicileri.
+        let classicState = {};
+        function initSnake() { classicState = { snake:[{x:10,y:7}], food:{x:15,y:7}, dir:{x:1,y:0}, nextDir:{x:1,y:0}, timer:0 }; }
+        function setSnakeDir(dx,dy) { if (classicState.dir && dx === -classicState.dir.x && dy === -classicState.dir.y) return; classicState.nextDir={x:dx,y:dy}; }
+        function updateSnake(dt) { classicState.timer+=dt; if(classicState.timer<120)return; classicState.timer=0; classicState.dir=classicState.nextDir; const h=classicState.snake[0], n={x:h.x+classicState.dir.x,y:h.y+classicState.dir.y}; if(n.x<0||n.x>=32||n.y<0||n.y>=24||classicState.snake.some(s=>s.x===n.x&&s.y===n.y)){gameState.lives--;updateHud();if(gameState.lives<=0)triggerGameOver('YILAN DUVARA ÇARPTI!');else initSnake();return;} classicState.snake.unshift(n); if(n.x===classicState.food.x&&n.y===classicState.food.y){gameState.score+=50;playSound('eat');do{classicState.food={x:Math.floor(Math.random()*32),y:Math.floor(Math.random()*24)}}while(classicState.snake.some(s=>s.x===classicState.food.x&&s.y===classicState.food.y));updateHud();}else classicState.snake.pop(); }
+        function drawSnake(){drawIdleBackdrop();const c=20;ctx.fillStyle='#ff2a85';ctx.fillRect(classicState.food.x*c,classicState.food.y*c,c-2,c-2);classicState.snake.forEach((s,i)=>{ctx.fillStyle=i?'#39ff14':'#ffe600';ctx.fillRect(s.x*c,s.y*c,c-2,c-2);});}
+        function initInvaders(){classicState={player:320,aliens:Array.from({length:3},(_,r)=>Array.from({length:8},(_,c)=>({x:100+c*55,y:75+r*38,alive:true}))).flat(),bullets:[],cooldown:0};}
+        function fireInvaderBullet(){if(classicState.cooldown<=0){classicState.bullets.push({x:classicState.player,y:430});classicState.cooldown=250;}}
+        function updateInvaders(dt){classicState.cooldown-=dt;if(keys.ArrowLeft)classicState.player=Math.max(25,classicState.player-5);if(keys.ArrowRight)classicState.player=Math.min(615,classicState.player+5);classicState.bullets.forEach(b=>b.y-=7);classicState.bullets=classicState.bullets.filter(b=>b.y>0);for(const b of classicState.bullets)for(const a of classicState.aliens)if(a.alive&&Math.abs(a.x-b.x)<18&&Math.abs(a.y-b.y)<14){a.alive=false;b.y=-1;gameState.score+=25;updateHud();}if(!classicState.aliens.some(a=>a.alive))triggerGameOver('UZAYLILAR YOK EDİLDİ!',true);}
+        function drawInvaders(){drawIdleBackdrop();classicState.aliens.forEach(a=>{if(a.alive){ctx.fillStyle='#39ff14';ctx.fillRect(a.x-14,a.y-10,28,18);}});ctx.fillStyle='#00f3ff';ctx.fillRect(classicState.player-18,440,36,12);}
+        function initBreakout(){classicState={paddle:270,ball:{x:320,y:400,vx:3,vy:-3},bricks:Array.from({length:4},(_,r)=>Array.from({length:10},(_,c)=>({x:34+c*58,y:55+r*25,alive:true}))).flat()};}
+        function updateBreakout(){const s=classicState;if(keys.ArrowLeft)s.paddle=Math.max(0,s.paddle-6);if(keys.ArrowRight)s.paddle=Math.min(560,s.paddle+6);s.ball.x+=s.ball.vx;s.ball.y+=s.ball.vy;if(s.ball.x<5||s.ball.x>635)s.ball.vx*=-1;if(s.ball.y<5)s.ball.vy*=-1;if(s.ball.y>430&&s.ball.x>s.paddle&&s.ball.x<s.paddle+80)s.ball.vy=-Math.abs(s.ball.vy);for(const b of s.bricks)if(b.alive&&s.ball.x>b.x&&s.ball.x<b.x+52&&s.ball.y>b.y&&s.ball.y<b.y+18){b.alive=false;s.ball.vy*=-1;gameState.score+=20;updateHud();}if(s.ball.y>480){gameState.lives--;updateHud();if(gameState.lives<=0)triggerGameOver('TOPU KAÇIRDIN!');else initBreakout();}if(!s.bricks.some(b=>b.alive))triggerGameOver('TUĞLALAR KIRILDI!',true);}
+        function drawBreakout(){drawIdleBackdrop();const s=classicState;s.bricks.forEach(b=>{if(b.alive){ctx.fillStyle='#ff2a85';ctx.fillRect(b.x,b.y,52,18);}});ctx.fillStyle='#00f3ff';ctx.fillRect(s.paddle,445,80,10);ctx.fillStyle='#ffe600';ctx.beginPath();ctx.arc(s.ball.x,s.ball.y,7,0,Math.PI*2);ctx.fill();}
+        function toggleExtraMode(){showToast('BİLGİ','Bu oyun için ekstra mod bulunmuyor.');}
+
         let xoxState = {
             board: Array(9).fill(null),
             turn: 'X',
