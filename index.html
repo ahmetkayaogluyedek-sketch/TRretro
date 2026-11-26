@@ -1,1160 +1,3207 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TRRetro - 23 Oyunlu Retro Arcade Merkezi</title>
-  <style>
-    :root {
-      --bg: #070913;
-      --panel: #11162a;
-      --panel-2: #18203d;
-      --neon-cyan: #00f5d4;
-      --neon-pink: #ff2a85;
-      --neon-yellow: #ffd166;
-      --neon-purple: #9b5de5;
-      --text: #eef2ff;
-      --muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.12);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRRetro - Türkiye'nin Retro Oyun Merkezi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Press Start 2P & VT323 for authentic 8-bit/16-bit feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-pink: #ff2a85;
+            --neon-cyan: #00f3ff;
+            --neon-yellow: #ffe600;
+            --neon-green: #39ff14;
+            --crt-bg: #0a0a12;
+            --cabinet-dark: #141424;
+        }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: radial-gradient(circle at top, #151c38 0%, var(--bg) 65%);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      min-height: 100vh;
-    }
+        body {
+            background-color: var(--crt-bg);
+            color: #e2e8f0;
+            font-family: 'VT323', monospace;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 42, 133, 0.15) 0%, transparent 60%),
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
 
-    header.trretro-header {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      background: rgba(10, 14, 28, 0.92);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
+        .font-arcade {
+            font-family: 'Press Start 2P', cursive;
+        }
 
-    .brand-group {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
+        .font-terminal {
+            font-family: 'VT323', monospace;
+        }
 
-    .made-by {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      color: var(--neon-yellow);
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
+        /* CRT Scanline & Flicker Overlay */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+        }
 
-    .brand-title {
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      line-height: 1;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
+        .crt-enabled .crt-overlay {
+            display: block;
+        }
 
-    .header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
+        .crt-disabled .crt-overlay {
+            display: none;
+        }
 
-    button, input {
-      font-family: inherit;
-    }
+        /* Neon Glow Effects */
+        .neon-text-pink {
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
+        }
 
-    .btn {
-      background: var(--panel-2);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
-    }
+        .neon-text-cyan {
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+        }
 
-    .btn:hover {
-      border-color: var(--neon-cyan);
-      background: #222d54;
-    }
+        .neon-text-yellow {
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow);
+        }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
+        .neon-border-cyan {
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
+        }
 
-    .btn-cyan {
-      background: rgba(0, 245, 212, 0.14);
-      border-color: var(--neon-cyan);
-      color: var(--neon-cyan);
-    }
+        .neon-border-pink {
+            border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 12px rgba(255, 42, 133, 0.4), inset 0 0 10px rgba(255, 42, 133, 0.2);
+        }
 
-    .btn-pink {
-      background: rgba(255, 42, 133, 0.16);
-      border-color: var(--neon-pink);
-      color: #ff85b8;
-    }
+        /* 3D Arcade Buttons */
+        .arcade-btn {
+            font-family: 'Press Start 2P', cursive;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
 
-    .container {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 18px;
-      display: grid;
-      grid-template-columns: 1.55fr 1fr;
-      gap: 18px;
-    }
+        .arcade-btn-pink {
+            background: linear-gradient(180deg, #ff4d97 0%, #d4005a 100%);
+            border: 2px solid #ff9ec7;
+            box-shadow: 0 5px 0 #7a0034, 0 8px 15px rgba(255, 42, 133, 0.5);
+            color: white;
+        }
 
-    @media (max-width: 920px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-    }
+        .arcade-btn-pink:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #7a0034, 0 2px 5px rgba(255, 42, 133, 0.5);
+        }
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    }
+        .arcade-btn-cyan {
+            background: linear-gradient(180deg, #33f6ff 0%, #00a8b3 100%);
+            border: 2px solid #b3fcff;
+            box-shadow: 0 5px 0 #00585e, 0 8px 15px rgba(0, 243, 255, 0.4);
+            color: #05161a;
+        }
 
-    .hud {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      background: #0b0f1f;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
+        .arcade-btn-cyan:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #00585e, 0 2px 5px rgba(0, 243, 255, 0.4);
+        }
 
-    .hud-item {
-      font-size: 13px;
-      color: var(--muted);
-    }
+        .arcade-btn-yellow {
+            background: linear-gradient(180deg, #ffed4a 0%, #d9b800 100%);
+            border: 2px solid #fff8b3;
+            box-shadow: 0 5px 0 #756300, 0 8px 15px rgba(255, 230, 0, 0.4);
+            color: #1a1600;
+        }
 
-    .hud-item strong {
-      color: var(--text);
-      font-size: 14px;
-    }
+        .arcade-btn-yellow:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #756300;
+        }
 
-    .crt-wrap {
-      position: relative;
-      background: #05070f;
-      border: 3px solid #2b355c;
-      border-radius: 14px;
-      overflow: hidden;
-      aspect-ratio: 4 / 3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        /* Blinking Insert Coin */
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.15; }
+        }
+        .animate-blink {
+            animation: blink 1.2s infinite;
+        }
 
-    canvas#gameCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: pointer;
-    }
+        /* Game Cartridge Card Hover */
+        .cartridge-card {
+            background: linear-gradient(145deg, #1b1b32 0%, #101020 100%);
+            border: 2px solid #2e2e54;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .cartridge-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 10px 25px rgba(0, 243, 255, 0.25);
+        }
 
-    .crt-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 5;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%,
-        rgba(0, 0, 0, 0.28) 50%
-      );
-      background-size: 100% 4px;
-      display: none;
-    }
+        /* Canvas Container */
+        .arcade-screen-bezel {
+            background: #07070c;
+            border: 4px solid #2b2b45;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 0 25px rgba(0, 243, 255, 0.2);
+            position: relative;
+        }
 
-    .crt-enabled .crt-overlay {
-      display: block;
-    }
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            width: 100%;
+            height: 100%;
+        }
 
-    .controls-bar {
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .dpad {
-      display: grid;
-      grid-template-columns: repeat(3, 44px);
-      grid-template-rows: repeat(2, 44px);
-      gap: 6px;
-    }
-
-    .dpad .empty {
-      visibility: hidden;
-    }
-
-    .action-keys {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .side-section + .side-section {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    .side-section h3 {
-      margin: 0 0 10px;
-      font-size: 15px;
-      color: var(--neon-cyan);
-    }
-
-    .player-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .player-row input {
-      flex: 1;
-      background: #0b0f1f;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    .leaderboard-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 6px;
-    }
-
-    .leaderboard-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #0b0f1f;
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-
-    .catalog-card {
-      grid-column: 1 / -1;
-    }
-
-    .catalog-top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .search-input {
-      min-width: 220px;
-      background: #0b0f1f;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 12px;
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-      gap: 10px;
-      max-height: 460px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .game-item {
-      background: #0b0f1f;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      text-align: left;
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .game-item:hover {
-      border-color: var(--neon-cyan);
-    }
-
-    .game-item.active {
-      border-color: var(--neon-pink);
-      background: rgba(255, 42, 133, 0.12);
-    }
-
-    .game-num {
-      font-size: 11px;
-      color: var(--neon-yellow);
-      font-weight: 800;
-    }
-
-    .game-name {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .game-cat {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    #retroToast {
-      position: fixed;
-      top: 72px;
-      right: 18px;
-      z-index: 60;
-      pointer-events: none;
-      max-width: 320px;
-      background: #141b36;
-      border: 1px solid var(--neon-cyan);
-      border-radius: 12px;
-      padding: 10px 14px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-      transform: translateX(140%);
-      transition: transform 0.25s ease;
-    }
-
-    #retroToast.toast-visible {
-      transform: translateX(0);
-    }
-
-    #retroToast strong {
-      display: block;
-      font-size: 12px;
-      color: var(--neon-cyan);
-      margin-bottom: 2px;
-    }
-
-    #retroToast span {
-      font-size: 13px;
-      color: var(--text);
-    }
-  </style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff2a85;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body>
-  <header class="trretro-header">
-    <div class="brand-group">
-      <span class="made-by">MADE BY MUHSIN</span>
-      <div class="brand-title">TRRETRO</div>
+<body class="crt-enabled min-h-screen flex flex-col">
+
+    <!-- CRT Scanline Effect Overlay -->
+    <div class="crt-overlay" id="crtOverlay"></div>
+
+    <!-- Custom Notification Toast (Replaces alert()) -->
+    <div id="retroToast" class="fixed top-20 right-4 z-50 transform translate-x-[150%] transition-transform duration-300 bg-[#141428] neon-border-yellow px-4 py-3 rounded-lg shadow-2xl max-w-xs">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🪙</span>
+            <div>
+                <p id="toastTitle" class="font-arcade text-[10px] text-[#ffe600] mb-1">BİLDİRİM</p>
+                <p id="toastMessage" class="font-terminal text-lg text-white leading-tight">Jeton eklendi!</p>
+            </div>
+        </div>
     </div>
 
-    <div class="header-actions">
-      <button type="button" class="btn btn-cyan" id="coinBtn">🪙 Jeton At</button>
-      <button type="button" class="btn" id="crtBtn">📺 CRT: AÇIK</button>
-      <button type="button" class="btn" id="soundBtn">🔊 Ses: AÇIK</button>
-      <button type="button" class="btn btn-pink" id="startBtn">▶ Başlat / Yeniden</button>
-    </div>
-  </header>
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-[#0d0d1a]/95 backdrop-blur-md border-b-2 border-[#2a2a4a] px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Logo -->
+            <a href="#salon" class="flex items-center gap-3 group" onclick="playSound('coin')">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff2a85] to-[#6a00f4] p-1.5 flex items-center justify-center neon-border-cyan">
+                    <!-- Custom Pixel Joystick SVG -->
+                    <svg viewBox="0 0 16 16" class="w-full h-full fill-white">
+                        <rect x="6" y="1" width="4" height="4" fill="#ffe600"/>
+                        <rect x="7" y="5" width="2" height="5" fill="#cbd5e1"/>
+                        <rect x="2" y="10" width="12" height="4" fill="#ff2a85"/>
+                        <rect x="4" y="9" width="2" height="1" fill="#00f3ff"/>
+                        <rect x="10" y="9" width="2" height="1" fill="#39ff14"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-arcade text-base sm:text-xl tracking-wider neon-text-pink">TRRetro</h1>
+                    <p class="font-terminal text-sm sm:text-base text-[#00f3ff] -mt-1 tracking-widest">TÜRKİYE'NİN RETRO OYUN MERKEZİ</p>
+                </div>
+            </a>
 
-  <main class="container">
-    <section class="card" id="oyun-kabini">
-      <div class="hud">
-        <div class="hud-item">Oyun: <strong id="activeGameTitle">Süper Yılan</strong></div>
-        <div class="hud-item">Durum: <strong id="statusVal">HAZIR</strong></div>
-        <div class="hud-item">Skor: <strong id="scoreVal">0</strong></div>
-        <div class="hud-item">En İyi: <strong id="bestVal">0</strong></div>
-        <div class="hud-item">Jeton: <strong id="coinCount">3</strong></div>
-      </div>
+            <!-- Navigation Links & Controls -->
+            <div class="flex items-center gap-2 sm:gap-4 flex-wrap">
+                <nav class="hidden md:flex items-center gap-5 font-arcade text-[10px]">
+                    <a href="#oyun-kabini" class="text-slate-300 hover:text-[#00f3ff] transition-colors">OYUN KABİNİ</a>
+                    <a href="#katalog" class="text-slate-300 hover:text-[#ff2a85] transition-colors">KASETLER</a>
+                    <a href="#rekorlar" class="text-slate-300 hover:text-[#ffe600] transition-colors">REKOR TABLOSU</a>
+                </nav>
 
-      <div class="crt-wrap crt-enabled" id="crtBox">
-        <canvas id="gameCanvas" width="640" height="480"></canvas>
-        <div class="crt-overlay"></div>
-      </div>
+                <!-- Jeton Counter -->
+                <button onclick="insertCoin()" class="bg-[#1b1b36] hover:bg-[#25254a] border border-[#ffe600] px-3 py-1.5 rounded-lg flex items-center gap-2 transition cursor-pointer" title="Jeton At">
+                    <span class="text-base">🪙</span>
+                    <span class="font-arcade text-[10px] text-[#ffe600]">JETON: <span id="coinCount">3</span></span>
+                </button>
 
-      <div class="controls-bar">
-        <div class="dpad" aria-label="Yön Tuşları">
-          <span class="empty"></span>
-          <button type="button" class="btn" data-dir="up">▲</button>
-          <span class="empty"></span>
-          <button type="button" class="btn" data-dir="left">◀</button>
-          <button type="button" class="btn" data-dir="down">▼</button>
-          <button type="button" class="btn" data-dir="right">▶</button>
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" onclick="toggleSound()" class="bg-[#1b1b36] hover:bg-[#25254a] border border-[#00f3ff] px-3 py-1.5 rounded-lg font-arcade text-[10px] text-[#00f3ff] flex items-center gap-1.5 cursor-pointer">
+                    <span id="soundIcon">🔊</span>
+                    <span class="hidden sm:inline" id="soundLabel">SES: AÇIK</span>
+                </button>
+
+                <!-- CRT Filter Toggle -->
+                <button id="crtToggleBtn" onclick="toggleCRT()" class="bg-[#1b1b36] hover:bg-[#25254a] border border-[#ff2a85] px-3 py-1.5 rounded-lg font-arcade text-[10px] text-[#ff2a85] cursor-pointer" title="CRT Tarama Çizgileri">
+                    📺 <span class="hidden sm:inline">CRT</span>
+                </button>
+            </div>
         </div>
+    </header>
 
-        <div class="action-keys">
-          <button type="button" class="btn btn-cyan" id="actionBtn">⚡ Aksiyon / Ateş</button>
-          <button type="button" class="btn" id="extraModeBtn" style="display:none;">Mod Değiştir</button>
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-12">
+
+        <!-- Hero Banner -->
+        <section id="salon" class="relative rounded-2xl bg-gradient-to-r from-[#16162e] via-[#1f1235] to-[#121e36] neon-border-pink p-6 sm:p-10 overflow-hidden">
+            <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div class="text-center lg:text-left space-y-4 max-w-2xl">
+                    <div class="inline-block bg-[#ff2a85]/20 border border-[#ff2a85] px-3 py-1 rounded-full">
+                        <span class="font-arcade text-[10px] text-[#ffe600] animate-blink">★ JETON AT VE OYNAMAYA BAŞLA ★</span>
+                    </div>
+                    <h2 class="font-arcade text-xl sm:text-3xl lg:text-4xl leading-relaxed neon-text-cyan">
+                        ATARI SALONU RUHU GERİ DÖNDÜ!
+                    </h2>
+                    <p class="font-terminal text-xl sm:text-2xl text-slate-300 leading-snug">
+                        90'ların mahalle atari salonlarından 8-bit ev konsollarına uzanan efsane klasikleri tarayıcında oyna, rekorları kır ve adını <span class="text-[#ffe600]">TRRetro Şampiyonlar Listesi</span>'ne yazdır!
+                    </p>
+                    <div class="pt-2 flex flex-wrap justify-center lg:justify-start gap-4">
+                        <a href="#oyun-kabini" onclick="playSound('select')" class="arcade-btn arcade-btn-pink px-5 py-3.5 rounded-xl text-xs">
+                            🕹️ HEMEN OYNA
+                        </a>
+                        <button onclick="insertCoin()" class="arcade-btn arcade-btn-yellow px-5 py-3.5 rounded-xl text-xs">
+                            🪙 +1 JETON AT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Decorative Retro Arcade Pixel Art Graphic -->
+                <div class="w-48 sm:w-60 flex-shrink-0 flex flex-col items-center">
+                    <svg viewBox="0 0 120 120" class="w-full h-auto drop-shadow-[0_0_15px_rgba(0,243,255,0.6)]">
+                        <!-- Alien Invader Pixel Art -->
+                        <g fill="#39ff14">
+                            <rect x="30" y="15" width="10" height="10"/>
+                            <rect x="80" y="15" width="10" height="10"/>
+                            <rect x="40" y="25" width="10" height="10"/>
+                            <rect x="70" y="25" width="10" height="10"/>
+                            <rect x="30" y="35" width="60" height="10"/>
+                            <rect x="20" y="45" width="20" height="10"/>
+                            <rect x="50" y="45" width="20" height="10"/>
+                            <rect x="80" y="45" width="20" height="10"/>
+                            <rect x="10" y="55" width="100" height="10"/>
+                            <rect x="10" y="65" width="10" height="10"/>
+                            <rect x="30" y="65" width="60" height="10"/>
+                            <rect x="100" y="65" width="10" height="10"/>
+                            <rect x="10" y="75" width="10" height="10"/>
+                            <rect x="30" y="75" width="10" height="10"/>
+                            <rect x="80" y="75" width="10" height="10"/>
+                            <rect x="100" y="75" width="10" height="10"/>
+                            <rect x="40" y="85" width="15" height="10"/>
+                            <rect x="65" y="85" width="15" height="10"/>
+                        </g>
+                        <!-- Eyes -->
+                        <rect x="40" y="45" width="10" height="10" fill="#ff2a85"/>
+                        <rect x="70" y="45" width="10" height="10" fill="#ff2a85"/>
+                    </svg>
+                    <span class="font-arcade text-[9px] text-[#39ff14] mt-2 tracking-widest">PLAYER 1 READY</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Arcade Cabinet Section -->
+        <section id="oyun-kabini" class="scroll-mt-24">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+                <div>
+                    <h2 class="font-arcade text-lg sm:text-2xl neon-text-pink flex items-center gap-3">
+                        <span>🕹️</span> TRRETRO ARCADE KABİNİ
+                    </h2>
+                    <p class="font-terminal text-xl text-slate-400">18 retro oyundan dilediğini seç, jetonunu at ve hemen oynamaya başla.</p>
+                </div>
+
+                <!-- Quick Cabinet Selector Strip -->
+                <div class="flex flex-wrap gap-1.5 max-w-2xl justify-start sm:justify-end">
+                    <button onclick="switchGame('snake')" id="tab-snake" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px]">🐍 01.YILAN</button>
+                    <button onclick="switchGame('invaders')" id="tab-invaders" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">👾 02.UZAY</button>
+                    <button onclick="switchGame('breakout')" id="tab-breakout" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🧱 03.TUĞLA</button>
+                    <button onclick="switchGame('xox')" id="tab-xox" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">❌ 04.XOX</button>
+                    <button onclick="switchGame('memory')" id="tab-memory" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🃏 05.HAFIZA</button>
+                    <button onclick="switchGame('pong')" id="tab-pong" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🏓 06.PONG</button>
+                    <button onclick="switchGame('mines')" id="tab-mines" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">💣 07.MAYIN</button>
+                    <button onclick="switchGame('meteor')" id="tab-meteor" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">☄️ 08.METEOR</button>
+                    <button onclick="switchGame('flappy')" id="tab-flappy" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🐦 09.KANAT</button>
+                    <button onclick="switchGame('g2048')" id="tab-g2048" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🔢 10.2048</button>
+                    <button onclick="switchGame('simon')" id="tab-simon" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🌈 11.SIMON</button>
+                    <button onclick="switchGame('reflex')" id="tab-reflex" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🎯 12.REFLEKS</button>
+                    <button onclick="switchGame('frogger')" id="tab-frogger" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🐸 13.KURBAĞA</button>
+                    <button onclick="switchGame('racer')" id="tab-racer" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🏎️ 14.OTOBAN</button>
+                    <button onclick="switchGame('hangman')" id="tab-hangman" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🔤 15.KELİME</button>
+                    <button onclick="switchGame('blackjack')" id="tab-blackjack" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🃏 16.21</button>
+                    <button onclick="switchGame('battleship')" id="tab-battleship" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🚢 17.RADAR</button>
+                    <button onclick="switchGame('maze')" id="tab-maze" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🌀 18.LABİRENT</button>
+                </div>
+            </div>
+
+            <!-- Main Cabinet Console -->
+            <div class="bg-[#121226] neon-border-cyan rounded-2xl p-4 sm:p-6 shadow-2xl">
+
+                <!-- Top Arcade Marquee & HUD -->
+                <div class="bg-[#090914] border-2 border-[#2a2a4e] rounded-xl p-3 sm:p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span id="currentGameBadge" class="text-2xl sm:text-3xl">🐍</span>
+                        <div>
+                            <h3 id="currentGameTitle" class="font-arcade text-xs sm:text-base text-[#00f3ff]">SÜPER YILAN (1989)</h3>
+                            <p id="currentGameHint" class="font-terminal text-lg text-slate-400">Yön tuşları veya dokunmatik kontrollerle yemleri topla!</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 sm:gap-6 bg-[#14142b] px-4 py-2 rounded-lg border border-[#30305a]">
+                        <div class="text-center">
+                            <span class="block font-arcade text-[9px] text-slate-400">SKOR</span>
+                            <span id="hudScore" class="font-arcade text-sm sm:text-lg text-[#39ff14]">0000</span>
+                        </div>
+                        <div class="h-8 w-[2px] bg-[#2a2a4e]"></div>
+                        <div class="text-center">
+                            <span class="block font-arcade text-[9px] text-slate-400">REKOR</span>
+                            <span id="hudHighScore" class="font-arcade text-sm sm:text-lg text-[#ffe600]">0000</span>
+                        </div>
+                        <div class="h-8 w-[2px] bg-[#2a2a4e]"></div>
+                        <div class="text-center">
+                            <span class="block font-arcade text-[9px] text-slate-400">CAN</span>
+                            <span id="hudLives" class="font-arcade text-sm sm:text-lg text-[#ff2a85]">♥♥♥</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Canvas Screen + Overlay -->
+                <div class="max-w-3xl mx-auto">
+                    <div id="canvasWrapper" class="arcade-screen-bezel rounded-xl overflow-hidden aspect-[4/3] w-full relative">
+                        <canvas id="arcadeCanvas"></canvas>
+
+                        <!-- Start / Game Over Overlay inside Screen -->
+                        <div id="screenOverlay" class="absolute inset-0 bg-[#070710]/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-20">
+                            <div id="overlayIcon" class="text-5xl mb-3">🐍</div>
+                            <h4 id="overlayTitle" class="font-arcade text-base sm:text-2xl neon-text-cyan mb-2">SÜPER YILAN</h4>
+                            <p id="overlayDesc" class="font-terminal text-xl sm:text-2xl text-slate-300 max-w-md mb-6">
+                                Duvarlara ve kuyruğuna çarpmadan neon elmaları topla. Hız giderek artar!
+                            </p>
+                            <div id="overlayFinalScoreBox" class="hidden mb-5 bg-[#161630] border border-[#ffe600] px-5 py-2.5 rounded-lg">
+                                <span class="font-arcade text-xs text-[#ffe600]">KAZANILAN SKOR: <span id="overlayFinalScore">0</span></span>
+                            </div>
+                            <button onclick="startCurrentGame()" class="arcade-btn arcade-btn-pink px-6 py-4 rounded-xl text-xs sm:text-sm">
+                                ▶ OYUNU BAŞLAT (1 JETON)
+                            </button>
+                            <span class="font-terminal text-lg text-[#ffe600] mt-3 animate-blink">VEYA 'ENTER' / 'BOŞLUK' TUŞUNA BAS</span>
+                        </div>
+                    </div>
+
+                    <!-- External Arcade Controls (Buttons outside Canvas as required) -->
+                    <div class="mt-5 flex flex-col items-center gap-4">
+                        <!-- Action Buttons Row -->
+                        <div class="flex flex-wrap items-center justify-center gap-3">
+                            <button onclick="startCurrentGame()" class="arcade-btn arcade-btn-cyan px-4 py-2.5 rounded-lg text-[10px]">
+                                🔄 YENİDEN BAŞLAT
+                            </button>
+                            <button onclick="togglePauseGame()" id="pauseBtn" class="arcade-btn arcade-btn-yellow px-4 py-2.5 rounded-lg text-[10px]">
+                                ⏸️ DURAKLAT
+                            </button>
+                            <!-- Contextual Extra Mode Button -->
+                            <button onclick="toggleExtraMode()" id="extraModeBtn" class="hidden arcade-btn arcade-btn-pink px-4 py-2.5 rounded-lg text-[10px]">
+                                🤖 MOD: CPU'YA KARŞI
+                            </button>
+                            <!-- Blackjack Stand Button -->
+                            <button onclick="blackjackStandAction()" id="bjStandBtn" class="hidden arcade-btn arcade-btn-yellow px-4 py-2.5 rounded-lg text-[10px]">
+                                ✋ KAL (STAND)
+                            </button>
+                        </div>
+
+                        <!-- On-screen Letter Keyboard for Hangman -->
+                        <div id="hangmanLetterBar" class="hidden w-full max-w-2xl bg-[#0b0b18] border border-[#ff2a85]/50 rounded-xl p-3">
+                            <p class="font-arcade text-[9px] text-[#ffe600] text-center mb-2">HARF SEÇ (KLAVYE İLE DE YAZABİLİRSİN)</p>
+                            <div id="hangmanLettersGrid" class="flex flex-wrap justify-center gap-1.5"></div>
+                        </div>
+
+                        <!-- Touch / D-Pad Controls for Mobile & Mouse Players -->
+                        <div class="w-full max-w-md bg-[#0b0b18] border border-[#2a2a4c] rounded-2xl p-4 flex items-center justify-between gap-4">
+                            <!-- D-Pad -->
+                            <div class="grid grid-cols-3 gap-2 w-36 h-36">
+                                <div></div>
+                                <button onpointerdown="handleVirtualInput('UP')" class="bg-[#1e1e3f] active:bg-[#00f3ff] active:text-black border-2 border-[#3b3b6d] rounded-xl flex items-center justify-center text-xl font-bold shadow-md">▲</button>
+                                <div></div>
+                                <button onpointerdown="handleVirtualInput('LEFT')" class="bg-[#1e1e3f] active:bg-[#00f3ff] active:text-black border-2 border-[#3b3b6d] rounded-xl flex items-center justify-center text-xl font-bold shadow-md">◀</button>
+                                <div class="bg-[#121226] rounded-full border border-[#2a2a4c] flex items-center justify-center text-xs text-slate-500">🕹️</div>
+                                <button onpointerdown="handleVirtualInput('RIGHT')" class="bg-[#1e1e3f] active:bg-[#00f3ff] active:text-black border-2 border-[#3b3b6d] rounded-xl flex items-center justify-center text-xl font-bold shadow-md">▶</button>
+                                <div></div>
+                                <button onpointerdown="handleVirtualInput('DOWN')" class="bg-[#1e1e3f] active:bg-[#00f3ff] active:text-black border-2 border-[#3b3b6d] rounded-xl flex items-center justify-center text-xl font-bold shadow-md">▼</button>
+                                <div></div>
+                            </div>
+
+                            <!-- Arcade A / B Action Buttons -->
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="flex items-center gap-4">
+                                    <button onpointerdown="handleVirtualInput('FIRE')" class="w-16 h-16 rounded-full arcade-btn arcade-btn-pink text-xs shadow-lg">
+                                        ATEŞ
+                                    </button>
+                                    <button onpointerdown="handleVirtualInput('START')" class="w-14 h-14 rounded-full arcade-btn arcade-btn-yellow text-[9px] shadow-lg">
+                                        BAŞLA
+                                    </button>
+                                </div>
+                                <span class="font-terminal text-base text-slate-400 text-center">Klavye: Yön Tuşları / WASD + Boşluk</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Retro Cartridge Catalog Showcase -->
+        <section id="katalog" class="scroll-mt-24 space-y-6">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div>
+                    <h2 class="font-arcade text-lg sm:text-2xl neon-text-cyan">📼 RETRO OYUN KASETLERİ (18 OYUN)</h2>
+                    <p class="font-terminal text-xl text-slate-400">Kategori filtrelerini kullan veya istediğin kaseti kabine tak!</p>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div class="flex flex-wrap gap-2" id="catalogFilterBar">
+                    <button onclick="filterCatalog('all')" data-cat="all" class="cat-pill arcade-btn arcade-btn-yellow px-3.5 py-2 rounded-lg text-[9px]">TÜMÜ (18)</button>
+                    <button onclick="filterCatalog('action')" data-cat="action" class="cat-pill arcade-btn arcade-btn-pink px-3.5 py-2 rounded-lg text-[9px] opacity-75">🔥 AKSİYON</button>
+                    <button onclick="filterCatalog('arcade')" data-cat="arcade" class="cat-pill arcade-btn arcade-btn-cyan px-3.5 py-2 rounded-lg text-[9px] opacity-75">⚡ ARCADE/REFLEKS</button>
+                    <button onclick="filterCatalog('puzzle')" data-cat="puzzle" class="cat-pill arcade-btn arcade-btn-yellow px-3.5 py-2 rounded-lg text-[9px] opacity-75">🧠 BULMACA/STRATEJİ</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="catalogGrid">
+                <!-- Populated cleanly for all 18 games -->
+            </div>
+        </section>
+
+        <!-- High Score Hall of Fame (localStorage powered) -->
+        <section id="rekorlar" class="scroll-mt-24 bg-[#121226] neon-border-pink rounded-2xl p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="font-arcade text-lg sm:text-2xl neon-text-yellow">🏆 ŞAMPİYONLAR REKOR TABLOSU</h2>
+                    <p class="font-terminal text-xl text-slate-300">Kendi rekorların tarayıcında otomatik kaydedilir. İsmini değiştirerek listeye imzanı at!</p>
+                </div>
+
+                <!-- Player Nickname Input -->
+                <div class="flex items-center gap-2 bg-[#0a0a16] border border-[#00f3ff] p-2 rounded-xl">
+                    <label for="playerNameInput" class="font-arcade text-[9px] text-[#00f3ff] pl-2">RUMUZ:</label>
+                    <input id="playerNameInput" type="text" maxlength="10" value="OYUNCU1" onchange="savePlayerName()" class="bg-transparent font-arcade text-xs text-[#ffe600] uppercase w-28 focus:outline-none border-b border-dashed border-[#ffe600]/50 px-1">
+                    <button onclick="savePlayerName()" class="bg-[#00f3ff] text-black font-arcade text-[9px] px-2.5 py-1.5 rounded-lg cursor-pointer">KAYDET</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="leaderboardGrid">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-[#28284a] flex justify-end">
+                <button onclick="resetHighScores()" class="font-arcade text-[9px] text-slate-400 hover:text-[#ff2a85] transition cursor-pointer">
+                    🗑️ REKORLARI SIFIRLA
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#080812] border-t-2 border-[#222240] py-6 px-4 mt-12">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+                <p class="font-arcade text-xs text-[#ff2a85]">TRRETRO ARCADE SALONU © 1989 - 2026</p>
+                <p class="font-terminal text-lg text-slate-400">Türkiye'nin Retro Oyun Kültürü ve 8-Bit / 16-Bit Dijital Arşivi</p>
+            </div>
+            <div class="font-terminal text-lg text-[#00f3ff]">
+                JETONLAR İADE EDİLMEZ • İYİ EĞLENCELER!
+            </div>
         </div>
-      </div>
+    </footer>
 
-      <div class="hint" id="controlHint">
-        Klavye: Yön Tuşları / WASD ile hareket, Boşluk ile aksiyon. Başlat butonuna basınca oyun sıfırlanıp başlar.
-      </div>
-    </section>
+    <script>
+        /* ==========================================================================
+           1. WEB AUDIO API RETRO SOUND SYNTHESIZER (8-BIT SFX)
+           ========================================================================== */
+        let audioCtx = null;
+        let soundEnabled = true;
 
-    <aside class="card">
-      <div class="side-section">
-        <h3>Oyuncu Rumuzu</h3>
-        <div class="player-row">
-          <input type="text" id="playerNameInput" maxlength="12" placeholder="Rumuzun (ör. MUHSIN)" />
-          <button type="button" class="btn btn-cyan" id="saveNameBtn">Kaydet</button>
-        </div>
-      </div>
-
-      <div class="side-section">
-        <h3>Bu Oyun İçin Rekorlar</h3>
-        <ul class="leaderboard-list" id="leaderboardList"></ul>
-        <div style="margin-top: 10px;">
-          <button type="button" class="btn" id="resetScoresBtn">Rekorları Sıfırla</button>
-        </div>
-      </div>
-    </aside>
-
-    <section class="card catalog-card">
-      <div class="catalog-top">
-        <div class="filters" id="categoryFilters">
-          <button type="button" class="btn btn-cyan" data-cat="Tümü">Tümü (23)</button>
-          <button type="button" class="btn" data-cat="Arcade">Arcade</button>
-          <button type="button" class="btn" data-cat="Aksiyon">Aksiyon</button>
-          <button type="button" class="btn" data-cat="Bulmaca">Bulmaca</button>
-          <button type="button" class="btn" data-cat="Refleks">Refleks</button>
-        </div>
-        <input type="search" class="search-input" id="gameSearch" placeholder="23 oyun içinde ara..." />
-      </div>
-
-      <div class="game-grid" id="gameGrid"></div>
-    </section>
-  </main>
-
-  <div id="retroToast">
-    <strong id="toastTitle">TRRETRO</strong>
-    <span id="toastMessage">Hazır!</span>
-  </div>
-
-  <script>
-    const GAMES = [
-      { id: "snake", name: "Süper Yılan", cat: "Arcade" },
-      { id: "invaders", name: "Uzay İstilacıları", cat: "Aksiyon" },
-      { id: "breakout", name: "Neon Tuğla Kırma", cat: "Arcade" },
-      { id: "xox", name: "Neon XOX", cat: "Bulmaca" },
-      { id: "memory", name: "Hafıza Kartı", cat: "Bulmaca" },
-      { id: "pong", name: "Retro Pong Tenis", cat: "Arcade" },
-      { id: "mines", name: "Mayın Tarlası", cat: "Bulmaca" },
-      { id: "dodge", name: "Meteor Kaçışı", cat: "Refleks" },
-      { id: "clicker", name: "Turbo Tıklama", cat: "Refleks" },
-      { id: "simon", name: "Renk Hafızası", cat: "Refleks" },
-      { id: "flappy", name: "Kanatlı Kuş", cat: "Arcade" },
-      { id: "catcher", name: "Yıldız Toplayıcı", cat: "Arcade" },
-      { id: "shooter_x", name: "Galaksi Avcısı", cat: "Aksiyon" },
-      { id: "maze_dash", name: "Labirent Koşusu", cat: "Bulmaca" },
-      { id: "reflex_box", name: "Hızlı Refleks", cat: "Refleks" },
-      { id: "cyber_jump", name: "Siber Zıplama", cat: "Arcade" },
-      { id: "laser_grid", name: "Lazer Izgara", cat: "Aksiyon" },
-      { id: "pixel_golf", name: "Piksel Golf", cat: "Bulmaca" },
-      { id: "turbo_lane", name: "Otoban Yarışı", cat: "Refleks" },
-      { id: "star_guard", name: "Yıldız Kalkanı", cat: "Aksiyon" },
-      { id: "tile_flip", name: "Karo Çevirme", cat: "Bulmaca" },
-      { id: "nova_blast", name: "Nova Patlaması", cat: "Aksiyon" },
-      { id: "aim_pulse", name: "Hedef Vuruşu", cat: "Refleks" }
-    ];
-
-    const STORAGE_KEY = "trretro_highscores_v1";
-    const NAME_KEY = "trretro_playername_v1";
-
-    let coins = 3;
-    let soundOn = true;
-    let crtOn = true;
-    let activeCategory = "Tümü";
-    let searchQuery = "";
-    let activeGame = GAMES[0];
-    let score = 0;
-    let gameRunning = false;
-    let gameOver = false;
-    let toastTimer = null;
-    let tickCount = 0;
-
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let audioCtx = null;
-    function playSound(type) {
-      if (!soundOn) return;
-      try {
-        if (!audioCtx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) audioCtx = new AudioContextClass();
-        }
-        if (!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        const freqs = { select: 520, coin: 880, point: 660, hit: 170, start: 740 };
-        osc.type = type === "hit" ? "sawtooth" : "square";
-        osc.frequency.setValueAtTime(freqs[type] || 440, now);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        osc.start(now);
-        osc.stop(now + 0.13);
-      } catch (e) {}
-    }
-
-    function showToast(title, msg) {
-      const box = document.getElementById("retroToast");
-      document.getElementById("toastTitle").textContent = title;
-      document.getElementById("toastMessage").textContent = msg;
-      box.classList.add("toast-visible");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => box.classList.remove("toast-visible"), 2400);
-    }
-
-    function getPlayerName() {
-      try {
-        const val = localStorage.getItem(NAME_KEY);
-        return (val && val.trim()) ? val.trim().toUpperCase() : "MUHSIN";
-      } catch (e) {
-        return "MUHSIN";
-      }
-    }
-
-    function savePlayerName() {
-      const input = document.getElementById("playerNameInput");
-      const clean = ((input && input.value) || "MUHSIN").trim().toUpperCase().slice(0, 12) || "MUHSIN";
-      try { localStorage.setItem(NAME_KEY, clean); } catch (e) {}
-      if (input) input.value = clean;
-      playSound("select");
-      showToast("RUMUZ KAYDEDİLDİ", "Aktif oyuncu: " + clean);
-    }
-
-    function loadAllScores() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {
-        return {};
-      }
-    }
-
-    function saveScore(gameId, pts) {
-      if (!pts || pts <= 0) return;
-      const all = loadAllScores();
-      const list = Array.isArray(all[gameId]) ? all[gameId] : [];
-      list.push({ name: getPlayerName(), score: Math.floor(pts) });
-      list.sort((a, b) => b.score - a.score);
-      all[gameId] = list.slice(0, 5);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(all)); } catch (e) {}
-      renderLeaderboard();
-      updateHud();
-    }
-
-    function resetScores() {
-      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-      playSound("hit");
-      renderLeaderboard();
-      updateHud();
-      showToast("REKORLAR SIFIRLANDI", "Skor listesi temizlendi.");
-    }
-
-    function renderLeaderboard() {
-      const listEl = document.getElementById("leaderboardList");
-      const all = loadAllScores();
-      const entries = Array.isArray(all[activeGame.id]) ? all[activeGame.id] : [];
-      if (!entries.length) {
-        listEl.innerHTML = "<li><span>Henüz rekor yok</span><strong>0</strong></li>";
-        return;
-      }
-      listEl.innerHTML = entries
-        .map((item, idx) => `<li><span>#${idx + 1} ${item.name}</span><strong>${item.score}</strong></li>`)
-        .join("");
-    }
-
-    function updateHud() {
-      document.getElementById("activeGameTitle").textContent = activeGame.name;
-      const statusEl = document.getElementById("statusVal");
-      statusEl.textContent = gameOver ? "BİTTİ" : (gameRunning ? "OYNANIYOR" : "HAZIR");
-      statusEl.style.color = gameOver ? "#ff2a85" : (gameRunning ? "#00f5d4" : "#ffd166");
-      document.getElementById("scoreVal").textContent = Math.floor(score);
-      const all = loadAllScores();
-      const best = (all[activeGame.id] && all[activeGame.id][0] && all[activeGame.id][0].score) || 0;
-      document.getElementById("bestVal").textContent = Math.max(best, Math.floor(score));
-      document.getElementById("coinCount").textContent = coins;
-    }
-
-    // Mini-game states
-    let snake = [];
-    let snakeDir = { x: 1, y: 0 };
-    let food = { x: 15, y: 10 };
-
-    let xoxBoard = Array(9).fill("");
-    let xoxTurn = "X";
-    let xoxVsCpu = true;
-
-    let memCards = [];
-    let memFlipped = [];
-    let memMatched = [];
-
-    let pongY = 200;
-    let aiY = 200;
-    let ball = { x: 320, y: 240, vx: 4.5, vy: 3.2 };
-
-    let dodgeX = 320;
-    let meteors = [];
-
-    let birdY = 220;
-    let birdVy = 0;
-    let pipes = [];
-
-    let targetBox = { x: 240, y: 180, size: 76, pulse: 0 };
-
-    function resetGameState(autoStart) {
-      score = 0;
-      tickCount = 0;
-      gameOver = false;
-      gameRunning = Boolean(autoStart);
-
-      const extraBtn = document.getElementById("extraModeBtn");
-      extraBtn.style.display = activeGame.id === "xox" ? "inline-block" : "none";
-      if (activeGame.id === "xox") {
-        extraBtn.textContent = xoxVsCpu ? "Mod: 1P vs CPU" : "Mod: 2 Kişilik";
-      }
-
-      if (activeGame.id === "snake") {
-        snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
-        snakeDir = { x: 1, y: 0 };
-        food = { x: 20, y: 10 };
-      } else if (activeGame.id === "xox") {
-        xoxBoard = Array(9).fill("");
-        xoxTurn = "X";
-      } else if (activeGame.id === "memory") {
-        const syms = ["👾", "🕹️", "🚀", "💎", "⭐", "🔥", "👾", "🕹️", "🚀", "💎", "⭐", "🔥"];
-        memCards = syms.sort(() => Math.random() - 0.5);
-        memFlipped = [];
-        memMatched = [];
-      } else if (activeGame.id === "pong") {
-        pongY = 200;
-        aiY = 200;
-        ball = { x: 320, y: 240, vx: 4.5, vy: 3.2 };
-      } else if (activeGame.id === "dodge") {
-        dodgeX = 320;
-        meteors = [];
-      } else if (activeGame.id === "flappy") {
-        birdY = 220;
-        birdVy = 0;
-        pipes = [{ x: 460, gapY: 200 }];
-      } else {
-        targetBox = { x: 220, y: 170, size: 76, pulse: 0 };
-      }
-
-      updateHud();
-      renderFrame();
-    }
-
-    function startOrRestartGame() {
-      resetGameState(true);
-      playSound("start");
-      showToast("OYUN BAŞLADI", activeGame.name + " aktif!");
-    }
-
-    function finishGame(finalScore) {
-      if (gameOver) return;
-      gameOver = true;
-      gameRunning = false;
-      playSound("hit");
-      saveScore(activeGame.id, finalScore);
-      updateHud();
-      showToast("OYUN BİTTİ", activeGame.name + " skorun: " + Math.floor(finalScore));
-    }
-
-    function handleDirection(dir) {
-      if (!gameRunning && !gameOver) {
-        resetGameState(true);
-      }
-      if (gameOver) return;
-
-      if (activeGame.id === "snake") {
-        if (dir === "up" && snakeDir.y !== 1) snakeDir = { x: 0, y: -1 };
-        if (dir === "down" && snakeDir.y !== -1) snakeDir = { x: 0, y: 1 };
-        if (dir === "left" && snakeDir.x !== 1) snakeDir = { x: -1, y: 0 };
-        if (dir === "right" && snakeDir.x !== -1) snakeDir = { x: 1, y: 0 };
-      } else if (activeGame.id === "pong") {
-        if (dir === "up") pongY = Math.max(10, pongY - 36);
-        if (dir === "down") pongY = Math.min(canvas.height - 90, pongY + 36);
-      } else if (activeGame.id === "dodge") {
-        if (dir === "left") dodgeX = Math.max(24, dodgeX - 38);
-        if (dir === "right") dodgeX = Math.min(canvas.width - 24, dodgeX + 38);
-      } else {
-        const step = 30;
-        if (dir === "up") targetBox.y = Math.max(60, targetBox.y - step);
-        if (dir === "down") targetBox.y = Math.min(canvas.height - targetBox.size - 20, targetBox.y + step);
-        if (dir === "left") targetBox.x = Math.max(20, targetBox.x - step);
-        if (dir === "right") targetBox.x = Math.min(canvas.width - targetBox.size - 20, targetBox.x + step);
-      }
-    }
-
-    function checkXoxWinner(b) {
-      const lines = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      for (const [a, c, d] of lines) {
-        if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
-      }
-      return b.every(Boolean) ? "DRAW" : null;
-    }
-
-    function handleAction() {
-      if (gameOver) {
-        startOrRestartGame();
-        return;
-      }
-      if (!gameRunning) {
-        resetGameState(true);
-      }
-
-      if (activeGame.id === "flappy") {
-        birdVy = -6.8;
-        playSound("point");
-        return;
-      }
-
-      if (activeGame.id === "xox") {
-        const emptyIdx = xoxBoard.findIndex((v) => !v);
-        if (emptyIdx === -1) return;
-        xoxBoard[emptyIdx] = xoxTurn;
-        playSound("point");
-        const win = checkXoxWinner(xoxBoard);
-        if (win === "X") {
-          score += 100;
-          saveScore("xox", score);
-          showToast("KAZANDIN", "X hattı tamamlandı!");
-          xoxBoard = Array(9).fill("");
-        } else if (win === "O") {
-          showToast("O KAZANDI", "Yeni el başlıyor.");
-          xoxBoard = Array(9).fill("");
-        } else if (win === "DRAW") {
-          xoxBoard = Array(9).fill("");
-        } else {
-          xoxTurn = xoxTurn === "X" ? "O" : "X";
-          if (xoxVsCpu && xoxTurn === "O") {
-            const cpuIdx = xoxBoard.findIndex((v) => !v);
-            if (cpuIdx !== -1) {
-              xoxBoard[cpuIdx] = "O";
-              xoxTurn = "X";
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
             }
-          }
-        }
-        updateHud();
-      } else if (activeGame.id === "memory") {
-        const nextIdx = memCards.findIndex((_, i) => !memFlipped.includes(i) && !memMatched.includes(i));
-        if (nextIdx === -1) {
-          memMatched = [];
-          memFlipped = [];
-          return;
-        }
-        memFlipped.push(nextIdx);
-        playSound("point");
-        if (memFlipped.length === 2) {
-          const [a, b] = memFlipped;
-          if (memCards[a] === memCards[b]) {
-            memMatched.push(a, b);
-            score += 50;
-            if (memMatched.length === memCards.length) {
-              saveScore("memory", score + 100);
-              showToast("TEBRİKLER", "Tüm kartlar eşleşti!");
-              memMatched = [];
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
-          }
-          memFlipped = [];
         }
-        updateHud();
-      } else {
-        score += 10;
-        targetBox.pulse = 1;
-        playSound("point");
-        targetBox.x = 40 + Math.floor(Math.random() * (canvas.width - 140));
-        targetBox.y = 75 + Math.floor(Math.random() * (canvas.height - 155));
-        updateHud();
-      }
-    }
 
-    function stepSimulation() {
-      if (!gameRunning || gameOver) return;
-      tickCount++;
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-      if (activeGame.id === "snake") {
-        if (tickCount % 7 === 0) {
-          const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
-          const cols = Math.floor(canvas.width / 20);
-          const rows = Math.floor(canvas.height / 20);
-          if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows) {
-            finishGame(score);
-            return;
-          }
-          snake.unshift(head);
-          if (head.x === food.x && head.y === food.y) {
-            score += 15;
-            playSound("point");
-            food = {
-              x: Math.floor(Math.random() * cols),
-              y: Math.floor(Math.random() * rows)
+                switch (type) {
+                    case 'coin':
+                        // Classic arcade coin insert B5 -> E6
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(987.77, now);
+                        osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                        gain.gain.setValueAtTime(0.12, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                        break;
+
+                    case 'eat':
+                    case 'brick':
+                        // High chirp
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(520, now);
+                        osc.frequency.exponentialRampToValueAtTime(980, now + 0.09);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                        break;
+
+                    case 'paddle':
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(320, now);
+                        osc.frequency.exponentialRampToValueAtTime(480, now + 0.06);
+                        gain.gain.setValueAtTime(0.14, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                        osc.start(now);
+                        osc.stop(now + 0.07);
+                        break;
+
+                    case 'laser':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(880, now);
+                        osc.frequency.exponentialRampToValueAtTime(180, now + 0.14);
+                        gain.gain.setValueAtTime(0.09, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                        osc.start(now);
+                        osc.stop(now + 0.15);
+                        break;
+
+                    case 'explosion':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(160, now);
+                        osc.frequency.exponentialRampToValueAtTime(38, now + 0.25);
+                        gain.gain.setValueAtTime(0.16, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+                        osc.start(now);
+                        osc.stop(now + 0.26);
+                        break;
+
+                    case 'gameover':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(380, now);
+                        osc.frequency.setValueAtTime(320, now + 0.15);
+                        osc.frequency.setValueAtTime(260, now + 0.30);
+                        osc.frequency.setValueAtTime(180, now + 0.45);
+                        gain.gain.setValueAtTime(0.14, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                        osc.start(now);
+                        osc.stop(now + 0.7);
+                        break;
+
+                    case 'win':
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.setValueAtTime(659.25, now + 0.1);
+                        osc.frequency.setValueAtTime(783.99, now + 0.2);
+                        osc.frequency.setValueAtTime(1046.50, now + 0.32);
+                        gain.gain.setValueAtTime(0.12, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+                        osc.start(now);
+                        osc.stop(now + 0.55);
+                        break;
+
+                    case 'select':
+                    default:
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(600, now);
+                        gain.gain.setValueAtTime(0.08, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                        osc.start(now);
+                        osc.stop(now + 0.06);
+                        break;
+                }
+            } catch (e) {
+                // Ignore audio errors if blocked
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const label = document.getElementById('soundLabel');
+            if (soundEnabled) {
+                icon.textContent = '🔊';
+                label.textContent = 'SES: AÇIK';
+                playSound('coin');
+                showToast('SES SİSTEMİ', '8-Bit ses efektleri açıldı!');
+            } else {
+                icon.textContent = '🔇';
+                label.textContent = 'SES: KAPALI';
+                showToast('SES SİSTEMİ', 'Ses efektleri kapatıldı.');
+            }
+        }
+
+        function toggleCRT() {
+            document.body.classList.toggle('crt-enabled');
+            document.body.classList.toggle('crt-disabled');
+            playSound('select');
+            const isCrt = document.body.classList.contains('crt-enabled');
+            showToast('EKRAN FİLTRESİ', isCrt ? 'CRT tarama çizgileri aktif.' : 'Klasik düz ekran modu.');
+        }
+
+        /* ==========================================================================
+           2. TOAST NOTIFICATION & COIN SYSTEM
+           ========================================================================== */
+        let coins = 3;
+        let toastTimeout = null;
+
+        function showToast(title, message) {
+            const toast = document.getElementById('retroToast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-x-[150%]');
+            toast.classList.add('translate-x-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-[150%]');
+            }, 2800);
+        }
+
+        function insertCoin() {
+            coins++;
+            document.getElementById('coinCount').textContent = coins;
+            playSound('coin');
+            showToast('JETON EKLENDİ!', `Toplam ${coins} jetonun var. İyi oyunlar!`);
+        }
+
+        /* ==========================================================================
+           3. HIGH SCORE & LEADERBOARD SYSTEM (localStorage)
+           ========================================================================== */
+        const STORAGE_KEY = 'trretro_highscores_v1';
+        const NAME_KEY = 'trretro_playername_v1';
+
+        const defaultScores = {
+            snake: [{ name: 'ANKARA90', score: 350 }, { name: 'KADIKOY', score: 240 }, { name: 'OYUNCU1', score: 120 }],
+            invaders: [{ name: 'GALAKSI', score: 1200 }, { name: 'ATARI_TR', score: 850 }, { name: 'OYUNCU1', score: 400 }],
+            breakout: [{ name: 'KIRICI', score: 950 }, { name: 'NEON_TR', score: 620 }, { name: 'OYUNCU1', score: 300 }],
+            xox: [{ name: 'USTA_X', score: 500 }, { name: 'TAKTIK', score: 300 }, { name: 'OYUNCU1', score: 100 }],
+            memory: [{ name: 'HAFIZA90', score: 920 }, { name: 'KARTAL', score: 740 }, { name: 'OYUNCU1', score: 500 }],
+            pong: [{ name: 'RAKET_TR', score: 500 }, { name: 'TENISCI', score: 300 }, { name: 'OYUNCU1', score: 200 }],
+            mines: [{ name: 'BOMBACI', score: 880 }, { name: 'DEDEKTIF', score: 640 }, { name: 'OYUNCU1', score: 400 }],
+            meteor: [{ name: 'PILOT88', score: 780 }, { name: 'YILDIZ', score: 520 }, { name: 'OYUNCU1', score: 250 }],
+            flappy: [{ name: 'KANAT_TR', score: 240 }, { name: 'NEONKUŞ', score: 150 }, { name: 'OYUNCU1', score: 60 }],
+            g2048: [{ name: 'KARE2048', score: 1840 }, { name: 'SAYICI', score: 1120 }, { name: 'OYUNCU1', score: 480 }],
+            simon: [{ name: 'SIMON90', score: 600 }, { name: 'RİTİM_TR', score: 350 }, { name: 'OYUNCU1', score: 150 }],
+            reflex: [{ name: 'REFLEKS', score: 680 }, { name: 'HIZLI_EL', score: 460 }, { name: 'OYUNCU1', score: 220 }],
+            frogger: [{ name: 'KURBAĞA', score: 500 }, { name: 'GEÇİTLİ', score: 300 }, { name: 'OYUNCU1', score: 100 }],
+            racer: [{ name: 'TURBO90', score: 960 }, { name: 'OTOBAN', score: 640 }, { name: 'OYUNCU1', score: 300 }],
+            hangman: [{ name: 'KELİMECİ', score: 600 }, { name: 'HARF_TR', score: 400 }, { name: 'OYUNCU1', score: 200 }],
+            blackjack: [{ name: 'KASA21', score: 750 }, { name: 'ZARCILAR', score: 450 }, { name: 'OYUNCU1', score: 200 }],
+            battleship: [{ name: 'AMIRAL', score: 650 }, { name: 'RADAR_TR', score: 450 }, { name: 'OYUNCU1', score: 200 }],
+            maze: [{ name: 'LABİRENT', score: 720 }, { name: 'KAÇIS89', score: 480 }, { name: 'OYUNCU1', score: 240 }]
+        };
+
+        function getPlayerName() {
+            return localStorage.getItem(NAME_KEY) || 'OYUNCU1';
+        }
+
+        function savePlayerName() {
+            const input = document.getElementById('playerNameInput');
+            let val = input.value.trim().toUpperCase().replace(/[^A-Z0-9ĞÜŞİÖÇ_]/g, '');
+            if (!val) val = 'OYUNCU1';
+            input.value = val;
+            localStorage.setItem(NAME_KEY, val);
+            playSound('select');
+            showToast('RUMUZ KAYDEDİLDİ', `Yeni oyuncu adın: ${val}`);
+            renderLeaderboard();
+        }
+
+        function loadScores() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    return { ...JSON.parse(JSON.stringify(defaultScores)), ...parsed };
+                }
+            } catch (e) {}
+            return JSON.parse(JSON.stringify(defaultScores));
+        }
+
+        function saveScore(gameId, newScore) {
+            if (newScore <= 0) return;
+            const scores = loadScores();
+            const playerName = getPlayerName();
+            if (!scores[gameId]) scores[gameId] = [];
+            scores[gameId].push({ name: playerName, score: newScore });
+            scores[gameId].sort((a, b) => b.score - a.score);
+            scores[gameId] = scores[gameId].slice(0, 5);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+            renderLeaderboard();
+            updateHud();
+        }
+
+        function getTopScore(gameId) {
+            const scores = loadScores();
+            return scores[gameId] && scores[gameId].length > 0 ? scores[gameId][0].score : 0;
+        }
+
+        function resetHighScores() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultScores));
+            playSound('explosion');
+            renderLeaderboard();
+            updateHud();
+            showToast('TABLO SIFIRLANDI', 'Varsayılan salon rekorları geri yüklendi.');
+        }
+
+        function renderLeaderboard() {
+            const scores = loadScores();
+            const grid = document.getElementById('leaderboardGrid');
+            const meta = [
+                { id: 'snake', title: '🐍 01. SÜPER YILAN', color: 'text-[#39ff14]', border: 'border-[#39ff14]/40' },
+                { id: 'invaders', title: '👾 02. UZAY İSTİLACILARI', color: 'text-[#ff2a85]', border: 'border-[#ff2a85]/40' },
+                { id: 'breakout', title: '🧱 03. NEON TUĞLA KIRMA', color: 'text-[#ffe600]', border: 'border-[#ffe600]/40' },
+                { id: 'xox', title: '❌ 04. NEON XOX', color: 'text-[#ff2a85]', border: 'border-[#ff2a85]/40' },
+                { id: 'memory', title: '🃏 05. HAFIZA KARTI', color: 'text-[#00f3ff]', border: 'border-[#00f3ff]/40' },
+                { id: 'pong', title: '🏓 06. RETRO PONG', color: 'text-[#ffe600]', border: 'border-[#ffe600]/40' },
+                { id: 'mines', title: '💣 07. MAYIN TARLASI', color: 'text-[#39ff14]', border: 'border-[#39ff14]/40' },
+                { id: 'meteor', title: '☄️ 08. METEOR KAÇIŞI', color: 'text-[#00f3ff]', border: 'border-[#00f3ff]/40' },
+                { id: 'flappy', title: '🐦 09. RETRO KANAT', color: 'text-[#ffe600]', border: 'border-[#ffe600]/40' },
+                { id: 'g2048', title: '🔢 10. 2048 NEON', color: 'text-[#ff2a85]', border: 'border-[#ff2a85]/40' },
+                { id: 'simon', title: '🌈 11. RENK SIMON', color: 'text-[#00f3ff]', border: 'border-[#00f3ff]/40' },
+                { id: 'reflex', title: '🎯 12. HIZLI REFLEKS', color: 'text-[#ffe600]', border: 'border-[#ffe600]/40' },
+                { id: 'frogger', title: '🐸 13. KURBAĞA GEÇİŞİ', color: 'text-[#39ff14]', border: 'border-[#39ff14]/40' },
+                { id: 'racer', title: '🏎️ 14. HIZ YARIŞI', color: 'text-[#00f3ff]', border: 'border-[#00f3ff]/40' },
+                { id: 'hangman', title: '🔤 15. KELİME AVI', color: 'text-[#ffe600]', border: 'border-[#ffe600]/40' },
+                { id: 'blackjack', title: '🃏 16. ZAR & 21', color: 'text-[#ff2a85]', border: 'border-[#ff2a85]/40' },
+                { id: 'battleship', title: '🚢 17. SAVAŞ GEMİSİ', color: 'text-[#00f3ff]', border: 'border-[#00f3ff]/40' },
+                { id: 'maze', title: '🌀 18. LABİRENT KAÇIŞI', color: 'text-[#39ff14]', border: 'border-[#39ff14]/40' }
+            ];
+
+            grid.innerHTML = meta.map(g => {
+                const list = scores[g.id] || [];
+                const rows = list.slice(0, 3).map((entry, idx) => `
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-800/80 last:border-0">
+                        <div class="flex items-center gap-2">
+                            <span class="font-arcade text-[9px] ${idx === 0 ? 'text-[#ffe600]' : 'text-slate-400'}">#${idx + 1}</span>
+                            <span class="font-arcade text-[9px] text-white">${entry.name}</span>
+                        </div>
+                        <span class="font-arcade text-[9px] ${g.color}">${String(entry.score).padStart(4, '0')}</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="bg-[#0b0b18] border ${g.border} rounded-xl p-4">
+                        <h3 class="font-arcade text-[10px] ${g.color} mb-2.5 pb-2 border-b border-slate-800">${g.title}</h3>
+                        <div class="space-y-0.5">${rows}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================================
+           3B. 18-GAME CATALOG DATA & CATEGORY FILTERING
+           ========================================================================== */
+        const CATALOG_GAMES = [
+            { id: 'snake', code: 'TR-001', year: '1989', cat: 'arcade', catLabel: 'ARCADE', badge: '🐍', title: '01. SÜPER YILAN', desc: 'Neon labirentte siber elmaları topla, uzadıkça hızlanan yılanı duvara çarptırma!', btnClass: 'arcade-btn-cyan' },
+            { id: 'invaders', code: 'TR-002', year: '1984', cat: 'action', catLabel: 'AKSİYON', badge: '👾', title: '02. UZAY İSTİLACILARI', desc: 'Uzaylı filolarına lazer atışı yap, savunmanı koru ve dalgaları temizle!', btnClass: 'arcade-btn-pink' },
+            { id: 'breakout', code: 'TR-003', year: '1986', cat: 'arcade', catLabel: 'ARCADE', badge: '🧱', title: '03. NEON TUĞLA KIRMA', desc: 'Plazma raketle topu sektir, renkli neon blok duvarlarını parçala!', btnClass: 'arcade-btn-yellow' },
+            { id: 'xox', code: 'TR-004', year: '1985', cat: 'puzzle', catLabel: 'BULMACA', badge: '❌', title: '04. NEON XOX', desc: 'CPU yapay zekasına veya arkadaşınla 2 kişilik modda 3 sembolü yan yana diz!', btnClass: 'arcade-btn-pink' },
+            { id: 'memory', code: 'TR-005', year: '1988', cat: 'puzzle', catLabel: 'BULMACA', badge: '🃏', title: '05. HAFIZA KARTI', desc: '4x4 retro simge kartlarının eşlerini bul, hız ve az hamle bonusu kazan!', btnClass: 'arcade-btn-cyan' },
+            { id: 'pong', code: 'TR-006', year: '1978', cat: 'arcade', catLabel: 'ARCADE', badge: '🏓', title: '06. RETRO PONG TENİS', desc: 'Klasik masa tenisi düellosunda CPU rakibe karşı 5 sayıya ilk ulaşan ol!', btnClass: 'arcade-btn-yellow' },
+            { id: 'mines', code: 'TR-007', year: '1990', cat: 'puzzle', catLabel: 'STRATEJİ', badge: '💣', title: '07. MAYIN TARLASI', desc: '8x8 alanda ipucu sayılarını oku, mayınlara bayrak dik ve tarlayı temizle!', btnClass: 'arcade-btn-pink' },
+            { id: 'meteor', code: 'TR-008', year: '1987', cat: 'action', catLabel: 'AKSİYON', badge: '☄️', title: '08. METEOR KAÇIŞI', desc: 'Gemiyi 4 yönde manevra ettirerek düşen meteorlardan kaç ve yıldız topla!', btnClass: 'arcade-btn-cyan' },
+            { id: 'flappy', code: 'TR-009', year: '1993', cat: 'arcade', catLabel: 'REFLEKS', badge: '🐦', title: '09. RETRO KANAT', desc: 'Zamanlamayı ayarla, kanat çırp ve neon boruların arasından ustalıkla süzül!', btnClass: 'arcade-btn-yellow' },
+            { id: 'g2048', code: 'TR-010', year: '1994', cat: 'puzzle', catLabel: 'BULMACA', badge: '🔢', title: '10. 2048 NEON', desc: 'Aynı sayı bloklarını kaydırarak birleştir, 2048 ve ötesine ulaş!', btnClass: 'arcade-btn-pink' },
+            { id: 'simon', code: 'TR-011', year: '1982', cat: 'arcade', catLabel: 'REFLEKS', badge: '🌈', title: '11. RENK SIMON', desc: 'Yanıp sönen 4 neon pad sırasını aklında tut ve hatasız tekrar et!', btnClass: 'arcade-btn-cyan' },
+            { id: 'reflex', code: 'TR-012', year: '1991', cat: 'arcade', catLabel: 'REFLEKS', badge: '🎯', title: '12. HIZLI REFLEKS', desc: 'Süre dolmadan belirlenen hedefleri vur, altın hedeflerden ekstra puan kap!', btnClass: 'arcade-btn-yellow' },
+            { id: 'frogger', code: 'TR-013', year: '1981', cat: 'action', catLabel: 'AKSİYON', badge: '🐸', title: '13. KURBAĞA GEÇİŞİ', desc: 'Hızlı araç şeritlerinden sağ salim geç ve güvenli limanlara ulaş!', btnClass: 'arcade-btn-pink' },
+            { id: 'racer', code: 'TR-014', year: '1988', cat: 'action', catLabel: 'AKSİYON', badge: '🏎️', title: '14. HIZ YARIŞI / OTOBAN', desc: '3 şeritli neon otoyolda trafik araçlarını solla, hızlan ve rekor kır!', btnClass: 'arcade-btn-cyan' },
+            { id: 'hangman', code: 'TR-015', year: '1985', cat: 'puzzle', catLabel: 'BULMACA', badge: '🔤', title: '15. KELİME AVI', desc: 'Retro ve oyun dünyasından gizli Türkçe kelimeleri 6 hatalı hakta çöz!', btnClass: 'arcade-btn-yellow' },
+            { id: 'blackjack', code: 'TR-016', year: '1986', cat: 'puzzle', catLabel: 'STRATEJİ', badge: '🃏', title: '16. ZAR & 21 BLACKJACK', desc: 'Kart çek (ATEŞ) veya kal (STAND), 21 sayısına en yakın eli kurarak kasayı yen!', btnClass: 'arcade-btn-pink' },
+            { id: 'battleship', code: 'TR-017', year: '1989', cat: 'puzzle', catLabel: 'STRATEJİ', badge: '🚢', title: '17. SAVAŞ GEMİSİ RADARI', desc: '6x6 radar ızgarasında gizli düşman gemilerini sınırlı atışta vurup batır!', btnClass: 'arcade-btn-cyan' },
+            { id: 'maze', code: 'TR-018', year: '1983', cat: 'puzzle', catLabel: 'MACERA', badge: '🌀', title: '18. LABİRENT KAÇIŞI', desc: 'Duvarlarla örülü labirentte çıkış portalını süre bitmeden bul ve kaç!', btnClass: 'arcade-btn-yellow' }
+        ];
+
+        function filterCatalog(category) {
+            playSound('select');
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.dataset.cat === category) btn.classList.remove('opacity-75');
+                else btn.classList.add('opacity-75');
+            });
+
+            const filtered = category === 'all'
+                ? CATALOG_GAMES
+                : CATALOG_GAMES.filter(g => g.cat === category);
+
+            document.getElementById('catalogGrid').innerHTML = filtered.map(g => `
+                <div class="cartridge-card rounded-2xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2.5">
+                            <span class="bg-[#00f3ff]/15 text-[#00f3ff] border border-[#00f3ff]/60 px-2 py-0.5 rounded font-arcade text-[8px]">${g.catLabel}</span>
+                            <span class="font-arcade text-[9px] text-slate-400">${g.year}</span>
+                        </div>
+                        <div class="h-24 rounded-xl bg-[#090918] border border-slate-700/70 flex items-center justify-center mb-3 relative">
+                            <span class="text-4xl">${g.badge}</span>
+                            <span class="absolute bottom-1.5 right-2.5 font-arcade text-[8px] text-slate-400">${g.code}</span>
+                        </div>
+                        <h3 class="font-arcade text-[10px] text-white mb-1.5 leading-relaxed">${g.title}</h3>
+                        <p class="font-terminal text-lg text-slate-300 leading-snug mb-3">${g.desc}</p>
+                    </div>
+                    <button onclick="selectAndScroll('${g.id}')" class="arcade-btn ${g.btnClass} w-full py-2.5 rounded-xl text-[8px]">
+                        ▶ KASETİ TAK VE OYNA
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        /* ==========================================================================
+           4. ARCADE ENGINE & 18 PLAYABLE MINI-GAMES
+           ========================================================================== */
+        const canvas = document.getElementById('arcadeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Logical internal resolution (4:3 classic arcade aspect ratio)
+        const LOGICAL_W = 640;
+        const LOGICAL_H = 480;
+
+        function resizeCanvas() {
+            canvas.width = LOGICAL_W;
+            canvas.height = LOGICAL_H;
+            if (!gameState.running) {
+                drawIdleBackdrop();
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        const GAME_CONFIGS = {
+            snake: { title: '01. SÜPER YILAN (1989)', badge: '🐍', hint: 'Yön tuşları / D-Pad ile elmaları topla!', desc: 'Duvarlara ve kuyruğuna çarpmadan siber elmaları topla!' },
+            invaders: { title: '02. UZAY İSTİLACILARI (1984)', badge: '👾', hint: 'Sağ/Sol hareket, Boşluk / ATEŞ ile lazer sık!', desc: 'Uzaylı filolarını aşağı inmeden lazer topunla yok et!' },
+            breakout: { title: '03. NEON TUĞLA KIRMA (1986)', badge: '🧱', hint: 'Sağ/Sol tuşları veya D-Pad ile raketi oynat!', desc: 'Topu sektirerek tüm neon tuğlaları kır!' },
+            xox: { title: '04. NEON XOX (1985)', badge: '❌', hint: 'Karelere tıkla veya D-Pad + ATEŞ ile oyna!', desc: 'CPU veya 2 Kişilik modda yatay/dikey/çapraz 3 sembolü diz!' },
+            memory: { title: '05. HAFIZA KARTI (1988)', badge: '🃏', hint: 'Kartlara tıkla veya D-Pad + ATEŞ ile çevir!', desc: '4x4 kartların eşlerini en az hamlede ve en hızlı sürede bul!' },
+            pong: { title: '06. RETRO PONG TENİS (1978)', badge: '🏓', hint: 'Yukarı/Aşağı veya D-Pad / Dokunmatik ile raketi yönet!', desc: 'CPU rakibine karşı 5 sayıya ilk ulaşan seti kazanır!' },
+            mines: { title: '07. MAYIN TARLASI (1990)', badge: '💣', hint: 'Tıkla aç, Sağ tık / Bayrak Modu ile bayrak dik!', desc: '8x8 alanda 10 mayına basmadan güvenli kareleri aç!' },
+            meteor: { title: '08. METEOR KAÇIŞI (1987)', badge: '☄️', hint: '4 yönde hareket et, meteorlardan kaç ve yıldız topla!', desc: 'Gemiyi koruyarak düşen meteorlardan sıyrıl ve yıldızları kap!' },
+            flappy: { title: '09. RETRO KANAT (1993)', badge: '🐦', hint: 'Boşluk / Yukarı / ATEŞ / Tık ile kanat çırp!', desc: 'Neon boruların arasından geçerek rekor puanı kovala!' },
+            g2048: { title: '10. 2048 NEON (1994)', badge: '🔢', hint: 'Yön tuşları veya D-Pad ile blokları kaydır!', desc: 'Aynı sayı bloklarını birleştirerek 2048 hedefine ulaş!' },
+            simon: { title: '11. RENK SIMON (1982)', badge: '🌈', hint: 'Renkli padlere tıkla veya Yön/ATEŞ ile sırayı tekrarla!', desc: 'Renk dizisini izle ve aynı sırayla tekrar ederek turları geç!' },
+            reflex: { title: '12. HIZLI REFLEKS (1991)', badge: '🎯', hint: 'Hedeflere tıkla veya ATEŞ ile vur! Altın hedef +30!', desc: '30 saniyede en çok hedefi vur, kaçırmamaya çalış!' },
+            frogger: { title: '13. KURBAĞA GEÇİŞİ (1981)', badge: '🐸', hint: 'Yön tuşları veya D-Pad ile otoyolu geç!', desc: 'Araçlara çarpmadan üst şeritteki güvenli limanlara ulaş!' },
+            racer: { title: '14. HIZ YARIŞI / OTOBAN (1988)', badge: '🏎️', hint: 'Sol/Sağ ile şerit değiştir, Yukarı ile hızlan!', desc: 'Trafik araçlarından kaç, otoyolda rekor mesafe yap!' },
+            hangman: { title: '15. KELİME AVI (1985)', badge: '🔤', hint: 'Alttaki harf tuşlarına veya klavyeye bas!', desc: 'Gizli Türkçe kelimeyi 6 hak dolmadan tahmin et!' },
+            blackjack: { title: '16. ZAR & 21 BLACKJACK (1986)', badge: '🃏', hint: 'ATEŞ ile Kart Çek, KAL butonuyla elini durdur!', desc: '21 sayısını geçmeden kasadan yüksek puan al!' },
+            battleship: { title: '17. SAVAŞ GEMİSİ RADARI (1989)', badge: '🚢', hint: '6x6 radarda karelere tıkla veya D-Pad + ATEŞ!', desc: '20 atış hakkıyla 6x6 denizdeki gizli gemileri batır!' },
+            maze: { title: '18. LABİRENT KAÇIŞI (1983)', badge: '🌀', hint: 'Yön tuşları veya D-Pad ile çıkış kapısına ulaş!', desc: 'Süre dolmadan labirentten çıkıp bonus puan kazan!' }
+        };
+
+        const ALL_GAME_IDS = Object.keys(GAME_CONFIGS);
+
+        let activeGame = 'snake';
+        let gameState = {
+            running: false,
+            paused: false,
+            score: 0,
+            lives: 3,
+            rafId: null,
+            lastTime: 0
+        };
+
+        // Pointer / Mouse / Touch Canvas Coordinates Helper
+        function getCanvasCoords(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = LOGICAL_W / rect.width;
+            const scaleY = LOGICAL_H / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
             };
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!gameState.running || gameState.paused) return;
+            const pos = getCanvasCoords(e.clientX, e.clientY);
+
+            if (activeGame === 'xox') {
+                handleXoxClick(pos.x, pos.y);
+            } else if (activeGame === 'memory') {
+                handleMemoryClick(pos.x, pos.y);
+            } else if (activeGame === 'mines') {
+                handleMinesClick(pos.x, pos.y, e.button === 2 || minesState.flagMode);
+            } else if (activeGame === 'pong') {
+                pongState.player.y = Math.max(20, Math.min(LOGICAL_H - pongState.player.h - 20, pos.y - pongState.player.h / 2));
+            } else if (activeGame === 'flappy') {
+                flapBird();
+            } else if (activeGame === 'simon') {
+                handleSimonClick(pos.x, pos.y);
+            } else if (activeGame === 'reflex') {
+                handleReflexClick(pos.x, pos.y);
+            } else if (activeGame === 'battleship') {
+                handleBattleshipClick(pos.x, pos.y);
+            }
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!gameState.running || gameState.paused) return;
+            if (activeGame === 'pong' && (e.buttons === 1 || e.pointerType === 'touch')) {
+                const pos = getCanvasCoords(e.clientX, e.clientY);
+                pongState.player.y = Math.max(20, Math.min(LOGICAL_H - pongState.player.h - 20, pos.y - pongState.player.h / 2));
+            }
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            if (activeGame === 'mines') e.preventDefault();
+        });
+
+        // Keyboard tracking
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                if (document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                }
+            }
+            keys[e.code] = true;
+
+            // Hangman direct keyboard letter input
+            if (gameState.running && !gameState.paused && activeGame === 'hangman' && document.activeElement.tagName !== 'INPUT') {
+                const ch = e.key.toLocaleUpperCase('tr-TR');
+                if (TR_ALPHABET.includes(ch)) {
+                    guessHangmanLetter(ch);
+                    return;
+                }
+            }
+
+            if ((e.code === 'Enter' || e.code === 'Space') && !gameState.running && document.activeElement.tagName !== 'INPUT') {
+                startCurrentGame();
+                return;
+            }
+
+            if (!gameState.running || gameState.paused) return;
+
+            if (activeGame === 'snake') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') setSnakeDir(0, -1);
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') setSnakeDir(0, 1);
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') setSnakeDir(-1, 0);
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') setSnakeDir(1, 0);
+            } else if (activeGame === 'invaders') {
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') fireInvaderBullet();
+            } else if (activeGame === 'flappy') {
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') flapBird();
+            } else if (activeGame === 'g2048') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') slide2048('UP');
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') slide2048('DOWN');
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') slide2048('LEFT');
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') slide2048('RIGHT');
+            } else if (activeGame === 'frogger') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') moveFrogger(0, -1);
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') moveFrogger(0, 1);
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveFrogger(-1, 0);
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') moveFrogger(1, 0);
+            } else if (activeGame === 'racer') {
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') shiftRacerLane(-1);
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') shiftRacerLane(1);
+            } else if (activeGame === 'maze') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') moveMazePlayer(0, -1);
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') moveMazePlayer(0, 1);
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveMazePlayer(-1, 0);
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') moveMazePlayer(1, 0);
+            } else if (activeGame === 'xox') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') xoxState.cursor.r = (xoxState.cursor.r + 2) % 3;
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') xoxState.cursor.r = (xoxState.cursor.r + 1) % 3;
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') xoxState.cursor.c = (xoxState.cursor.c + 2) % 3;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') xoxState.cursor.c = (xoxState.cursor.c + 1) % 3;
+                if (e.code === 'Space' || e.code === 'Enter') makeXoxMove(xoxState.cursor.r, xoxState.cursor.c);
+            } else if (activeGame === 'memory') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') memoryState.cursor.r = (memoryState.cursor.r + 3) % 4;
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') memoryState.cursor.r = (memoryState.cursor.r + 1) % 4;
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') memoryState.cursor.c = (memoryState.cursor.c + 3) % 4;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') memoryState.cursor.c = (memoryState.cursor.c + 1) % 4;
+                if (e.code === 'Space' || e.code === 'Enter') flipMemoryCard(memoryState.cursor.r * 4 + memoryState.cursor.c);
+            } else if (activeGame === 'mines') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') minesState.cursor.r = (minesState.cursor.r + 7) % 8;
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') minesState.cursor.r = (minesState.cursor.r + 1) % 8;
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') minesState.cursor.c = (minesState.cursor.c + 7) % 8;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') minesState.cursor.c = (minesState.cursor.c + 1) % 8;
+                if (e.code === 'KeyF') toggleExtraMode();
+                if (e.code === 'Space' || e.code === 'Enter') revealOrFlagMine(minesState.cursor.r, minesState.cursor.c, minesState.flagMode);
+            } else if (activeGame === 'simon') {
+                if (e.code === 'ArrowUp' || e.code === 'Digit1') pressSimonPad(0);
+                if (e.code === 'ArrowRight' || e.code === 'Digit2') pressSimonPad(1);
+                if (e.code === 'ArrowDown' || e.code === 'Digit3') pressSimonPad(2);
+                if (e.code === 'ArrowLeft' || e.code === 'Digit4') pressSimonPad(3);
+            } else if (activeGame === 'reflex') {
+                if (e.code === 'Space' || e.code === 'Enter') hitReflexByCursor();
+            } else if (activeGame === 'blackjack') {
+                if (e.code === 'Space' || e.code === 'KeyH') blackjackHitAction();
+                if (e.code === 'KeyS') blackjackStandAction();
+            } else if (activeGame === 'battleship') {
+                if (e.code === 'ArrowUp' || e.code === 'KeyW') bsState.cursor.r = (bsState.cursor.r + 5) % 6;
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') bsState.cursor.r = (bsState.cursor.r + 1) % 6;
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') bsState.cursor.c = (bsState.cursor.c + 5) % 6;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') bsState.cursor.c = (bsState.cursor.c + 1) % 6;
+                if (e.code === 'Space' || e.code === 'Enter') fireBattleshipCell(bsState.cursor.r, bsState.cursor.c);
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        function handleVirtualInput(action) {
+            if (action === 'START') {
+                if (!gameState.running) startCurrentGame();
+                else togglePauseGame();
+                return;
+            }
+            if (!gameState.running || gameState.paused) return;
+
+            if (activeGame === 'snake') {
+                if (action === 'UP') setSnakeDir(0, -1);
+                if (action === 'DOWN') setSnakeDir(0, 1);
+                if (action === 'LEFT') setSnakeDir(-1, 0);
+                if (action === 'RIGHT') setSnakeDir(1, 0);
+            } else if (activeGame === 'invaders') {
+                if (action === 'LEFT') invadersState.player.x = Math.max(20, invadersState.player.x - 28);
+                if (action === 'RIGHT') invadersState.player.x = Math.min(LOGICAL_W - 60, invadersState.player.x + 28);
+                if (action === 'FIRE' || action === 'UP') fireInvaderBullet();
+            } else if (activeGame === 'breakout') {
+                if (action === 'LEFT') breakoutState.paddle.x = Math.max(10, breakoutState.paddle.x - 36);
+                if (action === 'RIGHT') breakoutState.paddle.x = Math.min(LOGICAL_W - breakoutState.paddle.w - 10, breakoutState.paddle.x + 36);
+            } else if (activeGame === 'pong') {
+                if (action === 'UP') pongState.player.y = Math.max(20, pongState.player.y - 36);
+                if (action === 'DOWN') pongState.player.y = Math.min(LOGICAL_H - pongState.player.h - 20, pongState.player.y + 36);
+            } else if (activeGame === 'flappy') {
+                if (action === 'UP' || action === 'FIRE') flapBird();
+            } else if (activeGame === 'g2048') {
+                if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(action)) slide2048(action);
+            } else if (activeGame === 'frogger') {
+                if (action === 'UP') moveFrogger(0, -1);
+                if (action === 'DOWN') moveFrogger(0, 1);
+                if (action === 'LEFT') moveFrogger(-1, 0);
+                if (action === 'RIGHT') moveFrogger(1, 0);
+            } else if (activeGame === 'racer') {
+                if (action === 'LEFT') shiftRacerLane(-1);
+                if (action === 'RIGHT') shiftRacerLane(1);
+            } else if (activeGame === 'maze') {
+                if (action === 'UP') moveMazePlayer(0, -1);
+                if (action === 'DOWN') moveMazePlayer(0, 1);
+                if (action === 'LEFT') moveMazePlayer(-1, 0);
+                if (action === 'RIGHT') moveMazePlayer(1, 0);
+            } else if (activeGame === 'simon') {
+                if (action === 'UP') pressSimonPad(0);
+                if (action === 'RIGHT') pressSimonPad(1);
+                if (action === 'DOWN') pressSimonPad(2);
+                if (action === 'LEFT') pressSimonPad(3);
+            } else if (activeGame === 'reflex') {
+                if (action === 'FIRE') hitReflexByCursor();
+            } else if (activeGame === 'blackjack') {
+                if (action === 'FIRE') blackjackHitAction();
+            } else if (activeGame === 'battleship') {
+                if (action === 'UP') bsState.cursor.r = (bsState.cursor.r + 5) % 6;
+                if (action === 'DOWN') bsState.cursor.r = (bsState.cursor.r + 1) % 6;
+                if (action === 'LEFT') bsState.cursor.c = (bsState.cursor.c + 5) % 6;
+                if (action === 'RIGHT') bsState.cursor.c = (bsState.cursor.c + 1) % 6;
+                if (action === 'FIRE') fireBattleshipCell(bsState.cursor.r, bsState.cursor.c);
+            } else if (activeGame === 'xox') {
+                if (action === 'UP') xoxState.cursor.r = (xoxState.cursor.r + 2) % 3;
+                if (action === 'DOWN') xoxState.cursor.r = (xoxState.cursor.r + 1) % 3;
+                if (action === 'LEFT') xoxState.cursor.c = (xoxState.cursor.c + 2) % 3;
+                if (action === 'RIGHT') xoxState.cursor.c = (xoxState.cursor.c + 1) % 3;
+                if (action === 'FIRE') makeXoxMove(xoxState.cursor.r, xoxState.cursor.c);
+            } else if (activeGame === 'memory') {
+                if (action === 'UP') memoryState.cursor.r = (memoryState.cursor.r + 3) % 4;
+                if (action === 'DOWN') memoryState.cursor.r = (memoryState.cursor.r + 1) % 4;
+                if (action === 'LEFT') memoryState.cursor.c = (memoryState.cursor.c + 3) % 4;
+                if (action === 'RIGHT') memoryState.cursor.c = (memoryState.cursor.c + 1) % 4;
+                if (action === 'FIRE') flipMemoryCard(memoryState.cursor.r * 4 + memoryState.cursor.c);
+            } else if (activeGame === 'mines') {
+                if (action === 'UP') minesState.cursor.r = (minesState.cursor.r + 7) % 8;
+                if (action === 'DOWN') minesState.cursor.r = (minesState.cursor.r + 1) % 8;
+                if (action === 'LEFT') minesState.cursor.c = (minesState.cursor.c + 7) % 8;
+                if (action === 'RIGHT') minesState.cursor.c = (minesState.cursor.c + 1) % 8;
+                if (action === 'FIRE') revealOrFlagMine(minesState.cursor.r, minesState.cursor.c, minesState.flagMode);
+            }
+        }
+
+        function updateExtraModeButton() {
+            const btn = document.getElementById('extraModeBtn');
+            const bjBtn = document.getElementById('bjStandBtn');
+            const hangBar = document.getElementById('hangmanLetterBar');
+
+            bjBtn.classList.toggle('hidden', activeGame !== 'blackjack');
+            hangBar.classList.toggle('hidden', activeGame !== 'hangman');
+
+            if (activeGame === 'xox') {
+                btn.classList.remove('hidden');
+                btn.textContent = xoxState.vsCpu ? '🤖 MOD: CPU\'YA KARŞI' : '👥 MOD: 2 KİŞİLİK';
+            } else if (activeGame === 'mines') {
+                btn.classList.remove('hidden');
+                btn.textContent = minesState.flagMode ? '🚩 BAYRAK MODU: AÇIK' : '⛏️ KAZI MODU: AÇIK';
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function updateHud() {
+            document.getElementById('hudScore').textContent = String(gameState.score).padStart(4, '0');
+            document.getElementById('hudHighScore').textContent = String(getTopScore(activeGame)).padStart(4, '0');
+            const hearts = gameState.lives > 0 ? '♥'.repeat(Math.min(5, gameState.lives)) : '---';
+            document.getElementById('hudLives').textContent = hearts;
+        }
+
+        function switchGame(gameId) {
+            if (gameState.rafId) cancelAnimationFrame(gameState.rafId);
+            gameState.running = false;
+            gameState.paused = false;
+            activeGame = gameId;
+            gameState.score = 0;
+            gameState.lives = (gameId === 'snake' || gameId === 'mines' || gameId === 'flappy' || gameId === 'simon') ? 1 : 3;
+
+            ALL_GAME_IDS.forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                if (btn) {
+                    if (id === gameId) btn.classList.remove('opacity-75');
+                    else btn.classList.add('opacity-75');
+                }
+            });
+
+            const cfg = GAME_CONFIGS[gameId];
+            document.getElementById('currentGameBadge').textContent = cfg.badge;
+            document.getElementById('currentGameTitle').textContent = cfg.title;
+            document.getElementById('currentGameHint').textContent = cfg.hint;
+
+            const overlay = document.getElementById('screenOverlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('overlayIcon').textContent = cfg.badge;
+            document.getElementById('overlayTitle').textContent = cfg.title;
+            document.getElementById('overlayDesc').textContent = cfg.desc;
+            document.getElementById('overlayFinalScoreBox').classList.add('hidden');
+
+            updateExtraModeButton();
+            playSound('select');
             updateHud();
-          } else {
-            snake.pop();
-          }
+            drawIdleBackdrop();
         }
-      } else if (activeGame.id === "pong") {
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-        if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
-        aiY += (ball.y - (aiY + 40)) * 0.065;
-        if (ball.x < 36 && ball.y > pongY && ball.y < pongY + 80) {
-          ball.vx = Math.abs(ball.vx) + 0.15;
-          score += 10;
-          playSound("point");
-          updateHud();
-        }
-        if (ball.x > canvas.width - 36 && ball.y > aiY && ball.y < aiY + 80) {
-          ball.vx = -Math.abs(ball.vx);
-        }
-        if (ball.x < 0 || ball.x > canvas.width) {
-          finishGame(score);
-        }
-      } else if (activeGame.id === "dodge") {
-        if (tickCount % 24 === 0) {
-          meteors.push({ x: 30 + Math.random() * (canvas.width - 60), y: -15, r: 14 });
-        }
-        for (let i = meteors.length - 1; i >= 0; i--) {
-          meteors[i].y += 4.5;
-          const dx = meteors[i].x - dodgeX;
-          const dy = meteors[i].y - (canvas.height - 42);
-          if (Math.hypot(dx, dy) < meteors[i].r + 16) {
-            finishGame(score);
-            return;
-          }
-          if (meteors[i].y > canvas.height + 20) {
-            meteors.splice(i, 1);
-            score += 5;
+
+        function startCurrentGame() {
+            if (coins <= 0) insertCoin();
+            coins--;
+            document.getElementById('coinCount').textContent = coins;
+            playSound('coin');
+
+            if (gameState.rafId) cancelAnimationFrame(gameState.rafId);
+            gameState.running = true;
+            gameState.paused = false;
+            gameState.score = 0;
+            gameState.lives = (activeGame === 'snake' || activeGame === 'mines' || activeGame === 'flappy' || activeGame === 'simon') ? 1 : 3;
+            document.getElementById('pauseBtn').textContent = '⏸️ DURAKLAT';
+            document.getElementById('screenOverlay').classList.add('hidden');
+
+            if (activeGame === 'snake') initSnake();
+            if (activeGame === 'invaders') initInvaders();
+            if (activeGame === 'breakout') initBreakout();
+            if (activeGame === 'xox') initXox();
+            if (activeGame === 'memory') initMemory();
+            if (activeGame === 'pong') initPong();
+            if (activeGame === 'mines') initMines();
+            if (activeGame === 'meteor') initMeteor();
+            if (activeGame === 'flappy') initFlappy();
+            if (activeGame === 'g2048') init2048();
+            if (activeGame === 'simon') initSimon();
+            if (activeGame === 'reflex') initReflex();
+            if (activeGame === 'frogger') initFrogger();
+            if (activeGame === 'racer') initRacer();
+            if (activeGame === 'hangman') initHangman();
+            if (activeGame === 'blackjack') initBlackjack();
+            if (activeGame === 'battleship') initBattleship();
+            if (activeGame === 'maze') initMaze();
+
+            updateExtraModeButton();
             updateHud();
-          }
+            gameState.lastTime = performance.now();
+            gameLoop(gameState.lastTime);
         }
-      } else if (activeGame.id === "flappy") {
-        birdVy += 0.36;
-        birdY += birdVy;
-        if (birdY < 10 || birdY > canvas.height - 10) {
-          finishGame(score);
-          return;
+
+        function togglePauseGame() {
+            if (!gameState.running) return;
+            gameState.paused = !gameState.paused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = gameState.paused ? '▶ DEVAM ET' : '⏸️ DURAKLAT';
+            playSound('select');
+            if (!gameState.paused) {
+                gameState.lastTime = performance.now();
+                gameLoop(gameState.lastTime);
+            } else {
+                ctx.fillStyle = 'rgba(7, 7, 16, 0.78)';
+                ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+                ctx.fillStyle = '#ffe600';
+                ctx.font = '22px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText('OYUN DURAKLATILDI', LOGICAL_W / 2, LOGICAL_H / 2);
+            }
         }
-        if (tickCount % 95 === 0) {
-          pipes.push({ x: canvas.width + 20, gapY: 110 + Math.random() * 240, passed: false });
+
+        function triggerGameOver(customTitle = 'OYUN BİTTİ!', isWin = false) {
+            gameState.running = false;
+            if (gameState.rafId) cancelAnimationFrame(gameState.rafId);
+            playSound(isWin ? 'win' : 'gameover');
+            saveScore(activeGame, gameState.score);
+
+            const overlay = document.getElementById('screenOverlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('overlayIcon').textContent = isWin ? '🏆' : '💀';
+            document.getElementById('overlayTitle').textContent = customTitle;
+            document.getElementById('overlayDesc').textContent = isWin
+                ? 'Tebrikler şampiyon! Skorun TRRetro rekor tablosuna işlendi.'
+                : 'Harika mücadeleydi! Tekrar jeton atıp rekorunu geliştirebilirsin.';
+            document.getElementById('overlayFinalScoreBox').classList.remove('hidden');
+            document.getElementById('overlayFinalScore').textContent = gameState.score;
         }
-        for (let i = pipes.length - 1; i >= 0; i--) {
-          pipes[i].x -= 3.2;
-          const hitX = Math.abs(pipes[i].x - 140) < 26;
-          const hitGap = Math.abs(birdY - pipes[i].gapY) > 62;
-          if (hitX && hitGap) {
-            finishGame(score);
-            return;
-          }
-          if (!pipes[i].passed && pipes[i].x < 140) {
-            pipes[i].passed = true;
-            score += 10;
-            playSound("point");
+
+        function drawIdleBackdrop() {
+            ctx.fillStyle = '#070710';
+            ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.08)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < LOGICAL_W; x += 32) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, LOGICAL_H); ctx.stroke();
+            }
+            for (let y = 0; y < LOGICAL_H; y += 32) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke();
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME D: NEON XOX (TIC-TAC-TOE - CPU / 2P)
+           -------------------------------------------------------------------------- */
+        let xoxState = {
+            board: Array(9).fill(null),
+            turn: 'X',
+            vsCpu: true,
+            winLine: null,
+            roundOver: false,
+            winsX: 0,
+            winsO: 0,
+            cursor: { r: 1, c: 1 },
+            cpuTimer: null
+        };
+
+        function initXox() {
+            clearTimeout(xoxState.cpuTimer);
+            xoxState.board = Array(9).fill(null);
+            xoxState.turn = 'X';
+            xoxState.winLine = null;
+            xoxState.roundOver = false;
+            xoxState.cursor = { r: 1, c: 1 };
+        }
+
+        function handleXoxClick(px, py) {
+            const size = 300;
+            const startX = (LOGICAL_W - size) / 2;
+            const startY = 105;
+            if (px < startX || px > startX + size || py < startY || py > startY + size) return;
+            const c = Math.floor((px - startX) / (size / 3));
+            const r = Math.floor((py - startY) / (size / 3));
+            xoxState.cursor = { r, c };
+            makeXoxMove(r, c);
+        }
+
+        function makeXoxMove(r, c) {
+            if (xoxState.roundOver) {
+                initXox();
+                return;
+            }
+            if (xoxState.vsCpu && xoxState.turn === 'O') return;
+            const idx = r * 3 + c;
+            if (xoxState.board[idx] !== null) return;
+
+            xoxState.board[idx] = xoxState.turn;
+            playSound('paddle');
+
+            if (checkXoxOutcome()) return;
+
+            xoxState.turn = xoxState.turn === 'X' ? 'O' : 'X';
+
+            if (xoxState.vsCpu && xoxState.turn === 'O' && !xoxState.roundOver) {
+                xoxState.cpuTimer = setTimeout(() => {
+                    if (!gameState.running || activeGame !== 'xox' || xoxState.roundOver) return;
+                    const cpuIdx = getBestXoxCpuMove();
+                    if (cpuIdx !== -1) {
+                        xoxState.board[cpuIdx] = 'O';
+                        playSound('eat');
+                        if (!checkXoxOutcome()) {
+                            xoxState.turn = 'X';
+                        }
+                    }
+                }, 360);
+            }
+        }
+
+        function getBestXoxCpuMove() {
+            const b = xoxState.board;
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            // 1. Try winning move
+            for (const [a, c, d] of lines) {
+                const vals = [b[a], b[c], b[d]];
+                if (vals.filter(v => v === 'O').length === 2 && vals.includes(null)) {
+                    return [a, c, d][vals.indexOf(null)];
+                }
+            }
+            // 2. Block player X
+            for (const [a, c, d] of lines) {
+                const vals = [b[a], b[c], b[d]];
+                if (vals.filter(v => v === 'X').length === 2 && vals.includes(null)) {
+                    return [a, c, d][vals.indexOf(null)];
+                }
+            }
+            // 3. Center or random available
+            if (b[4] === null) return 4;
+            const avail = b.map((v, i) => v === null ? i : -1).filter(i => i !== -1);
+            return avail.length > 0 ? avail[Math.floor(Math.random() * avail.length)] : -1;
+        }
+
+        function checkXoxOutcome() {
+            const b = xoxState.board;
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (const line of lines) {
+                const [a, c, d] = line;
+                if (b[a] && b[a] === b[c] && b[a] === b[d]) {
+                    xoxState.winLine = line;
+                    xoxState.roundOver = true;
+                    if (b[a] === 'X') {
+                        xoxState.winsX++;
+                        gameState.score += 100;
+                        playSound('win');
+                        saveScore('xox', gameState.score);
+                        showToast('X KAZANDI!', '+100 Puan! Yeni tur için tahtaya tıkla.');
+                    } else {
+                        xoxState.winsO++;
+                        if (!xoxState.vsCpu) gameState.score += 100;
+                        playSound('explosion');
+                        showToast(xoxState.vsCpu ? 'CPU KAZANDI!' : 'O KAZANDI!', 'Yeni tur için tahtaya tıkla.');
+                    }
+                    updateHud();
+                    return true;
+                }
+            }
+            if (!b.includes(null)) {
+                xoxState.roundOver = true;
+                gameState.score += 25;
+                playSound('select');
+                updateHud();
+                showToast('BERABERE!', '+25 Puan! Yeni tur için tahtaya tıkla.');
+                return true;
+            }
+            return false;
+        }
+
+        function drawXox() {
+            drawIdleBackdrop();
+
+            const size = 300;
+            const cell = size / 3;
+            const startX = (LOGICAL_W - size) / 2;
+            const startY = 105;
+
+            // Top Match Scoreboard
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillText(`X: ${xoxState.winsX}`, LOGICAL_W / 2 - 140, 45);
+            ctx.fillStyle = '#ffe600';
+            ctx.fillText(xoxState.vsCpu ? 'CPU MODU' : '2P MODU', LOGICAL_W / 2, 45);
+            ctx.fillStyle = '#ff2a85';
+            ctx.fillText(`O: ${xoxState.winsO}`, LOGICAL_W / 2 + 140, 45);
+
+            // Turn Indicator
+            ctx.font = '13px "Press Start 2P"';
+            ctx.fillStyle = xoxState.turn === 'X' ? '#00f3ff' : '#ff2a85';
+            const statusText = xoxState.roundOver
+                ? 'TUR BİTTİ! DEVAM İÇİN TIKLA'
+                : `SIRA: ${xoxState.turn} ${xoxState.vsCpu && xoxState.turn === 'O' ? '(CPU)' : ''}`;
+            ctx.fillText(statusText, LOGICAL_W / 2, 80);
+
+            // Cursor Highlight
+            if (!xoxState.roundOver) {
+                ctx.fillStyle = 'rgba(255, 230, 0, 0.14)';
+                ctx.fillRect(
+                    startX + xoxState.cursor.c * cell + 6,
+                    startY + xoxState.cursor.r * cell + 6,
+                    cell - 12,
+                    cell - 12
+                );
+            }
+
+            // Neon Grid Lines
+            ctx.strokeStyle = '#00f3ff';
+            ctx.shadowColor = '#00f3ff';
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 4;
+            for (let i = 1; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.moveTo(startX + i * cell, startY);
+                ctx.lineTo(startX + i * cell, startY + size);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY + i * cell);
+                ctx.lineTo(startX + size, startY + i * cell);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+
+            // Draw X and O Symbols
+            for (let i = 0; i < 9; i++) {
+                const val = xoxState.board[i];
+                if (!val) continue;
+                const r = Math.floor(i / 3);
+                const c = i % 3;
+                const cx = startX + c * cell + cell / 2;
+                const cy = startY + r * cell + cell / 2;
+
+                if (val === 'X') {
+                    ctx.strokeStyle = '#00f3ff';
+                    ctx.shadowColor = '#00f3ff';
+                    ctx.shadowBlur = 12;
+                    ctx.lineWidth = 7;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 26, cy - 26);
+                    ctx.lineTo(cx + 26, cy + 26);
+                    ctx.moveTo(cx + 26, cy - 26);
+                    ctx.lineTo(cx - 26, cy + 26);
+                    ctx.stroke();
+                } else {
+                    ctx.strokeStyle = '#ff2a85';
+                    ctx.shadowColor = '#ff2a85';
+                    ctx.shadowBlur = 12;
+                    ctx.lineWidth = 7;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            // Winning Strike Line
+            if (xoxState.winLine) {
+                const [a, , d] = xoxState.winLine;
+                const r1 = Math.floor(a / 3), c1 = a % 3;
+                const r2 = Math.floor(d / 3), c2 = d % 3;
+                ctx.strokeStyle = '#ffe600';
+                ctx.shadowColor = '#ffe600';
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(startX + c1 * cell + cell / 2, startY + r1 * cell + cell / 2);
+                ctx.lineTo(startX + c2 * cell + cell / 2, startY + r2 * cell + cell / 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME E: HAFIZA KARTI (4x4 RETRO MEMORY MATCH)
+           -------------------------------------------------------------------------- */
+        let memoryState = {
+            cards: [],
+            flipped: [],
+            moves: 0,
+            elapsed: 0,
+            locked: false,
+            cursor: { r: 0, c: 0 }
+        };
+
+        function initMemory() {
+            const icons = ['🕹️', '👾', '🐍', '🚀', '💎', '⭐', '🍒', '⚡'];
+            const deck = [...icons, ...icons]
+                .sort(() => Math.random() - 0.5)
+                .map((icon, idx) => ({
+                    id: idx,
+                    icon,
+                    revealed: false,
+                    matched: false
+                }));
+            memoryState = {
+                cards: deck,
+                flipped: [],
+                moves: 0,
+                elapsed: 0,
+                locked: false,
+                cursor: { r: 0, c: 0 }
+            };
+        }
+
+        function handleMemoryClick(px, py) {
+            const gridW = 360, gridH = 340;
+            const startX = (LOGICAL_W - gridW) / 2;
+            const startY = 85;
+            const gap = 10;
+            const cardW = (gridW - gap * 3) / 4;
+            const cardH = (gridH - gap * 3) / 4;
+
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const cx = startX + c * (cardW + gap);
+                    const cy = startY + r * (cardH + gap);
+                    if (px >= cx && px <= cx + cardW && py >= cy && py <= cy + cardH) {
+                        memoryState.cursor = { r, c };
+                        flipMemoryCard(r * 4 + c);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function flipMemoryCard(idx) {
+            if (memoryState.locked) return;
+            const card = memoryState.cards[idx];
+            if (!card || card.revealed || card.matched) return;
+
+            card.revealed = true;
+            memoryState.flipped.push(card);
+            playSound('select');
+
+            if (memoryState.flipped.length === 2) {
+                memoryState.moves++;
+                memoryState.locked = true;
+                const [c1, c2] = memoryState.flipped;
+
+                if (c1.icon === c2.icon) {
+                    setTimeout(() => {
+                        c1.matched = true;
+                        c2.matched = true;
+                        memoryState.flipped = [];
+                        memoryState.locked = false;
+                        gameState.score += 100;
+                        playSound('eat');
+                        updateHud();
+
+                        if (memoryState.cards.every(c => c.matched)) {
+                            const bonus = Math.max(50, 400 - memoryState.moves * 15 - Math.floor(memoryState.elapsed) * 3);
+                            gameState.score += bonus;
+                            updateHud();
+                            triggerGameOver(`TÜM EŞLER BULUNDU! (+${bonus} BONUS)`, true);
+                        }
+                    }, 320);
+                } else {
+                    setTimeout(() => {
+                        c1.revealed = false;
+                        c2.revealed = false;
+                        memoryState.flipped = [];
+                        memoryState.locked = false;
+                        playSound('paddle');
+                    }, 750);
+                }
+            }
+        }
+
+        function updateMemory(dt) {
+            memoryState.elapsed += dt / 1000;
+        }
+
+        function drawMemory() {
+            drawIdleBackdrop();
+
+            // Header Stats
+            ctx.font = '13px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillText(`HAMLE: ${memoryState.moves}`, LOGICAL_W / 2 - 130, 48);
+            ctx.fillStyle = '#ffe600';
+            ctx.fillText(`SÜRE: ${Math.floor(memoryState.elapsed)}sn`, LOGICAL_W / 2 + 130, 48);
+
+            const gridW = 360, gridH = 340;
+            const startX = (LOGICAL_W - gridW) / 2;
+            const startY = 85;
+            const gap = 10;
+            const cardW = (gridW - gap * 3) / 4;
+            const cardH = (gridH - gap * 3) / 4;
+
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const idx = r * 4 + c;
+                    const card = memoryState.cards[idx];
+                    const cx = startX + c * (cardW + gap);
+                    const cy = startY + r * (cardH + gap);
+
+                    // Card background
+                    if (card.matched) {
+                        ctx.fillStyle = '#0a2e1d';
+                        ctx.strokeStyle = '#39ff14';
+                    } else if (card.revealed) {
+                        ctx.fillStyle = '#1e1b4b';
+                        ctx.strokeStyle = '#ffe600';
+                    } else {
+                        ctx.fillStyle = '#161630';
+                        ctx.strokeStyle = '#ff2a85';
+                    }
+
+                    ctx.lineWidth = (memoryState.cursor.r === r && memoryState.cursor.c === c) ? 4 : 2;
+                    if (memoryState.cursor.r === r && memoryState.cursor.c === c) {
+                        ctx.strokeStyle = '#00f3ff';
+                    }
+
+                    ctx.fillRect(cx, cy, cardW, cardH);
+                    ctx.strokeRect(cx, cy, cardW, cardH);
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    if (card.revealed || card.matched) {
+                        ctx.font = '32px sans-serif';
+                        ctx.fillText(card.icon, cx + cardW / 2, cy + cardH / 2 + 2);
+                    } else {
+                        ctx.font = '14px "Press Start 2P"';
+                        ctx.fillStyle = '#ff2a85';
+                        ctx.fillText('TR', cx + cardW / 2, cy + cardH / 2);
+                    }
+                    ctx.textBaseline = 'alphabetic';
+                }
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME F: RETRO PONG (MASA TENİSİ - 5 PUANDA SET)
+           -------------------------------------------------------------------------- */
+        let pongState = {};
+
+        function initPong() {
+            pongState = {
+                player: { x: 24, y: LOGICAL_H / 2 - 42, w: 14, h: 84, speed: 380, score: 0 },
+                cpu: { x: LOGICAL_W - 38, y: LOGICAL_H / 2 - 42, w: 14, h: 84, speed: 270, score: 0 },
+                ball: { x: LOGICAL_W / 2, y: LOGICAL_H / 2, r: 8, vx: 270, vy: 180 }
+            };
+        }
+
+        function resetPongBall(dir) {
+            pongState.ball.x = LOGICAL_W / 2;
+            pongState.ball.y = LOGICAL_H / 2;
+            pongState.ball.vx = 270 * dir;
+            pongState.ball.vy = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
+        }
+
+        function updatePong(dt) {
+            const sec = dt / 1000;
+            const p = pongState.player;
+            const cpu = pongState.cpu;
+            const b = pongState.ball;
+
+            if (keys['ArrowUp'] || keys['KeyW']) p.y = Math.max(16, p.y - p.speed * sec);
+            if (keys['ArrowDown'] || keys['KeyS']) p.y = Math.min(LOGICAL_H - p.h - 16, p.y + p.speed * sec);
+
+            // CPU AI tracking
+            const cpuCenter = cpu.y + cpu.h / 2;
+            if (b.vx > 0) {
+                if (cpuCenter < b.y - 10) cpu.y = Math.min(LOGICAL_H - cpu.h - 16, cpu.y + cpu.speed * sec);
+                else if (cpuCenter > b.y + 10) cpu.y = Math.max(16, cpu.y - cpu.speed * sec);
+            }
+
+            b.x += b.vx * sec;
+            b.y += b.vy * sec;
+
+            // Top & Bottom bounce
+            if (b.y - b.r <= 12) { b.y = 12 + b.r; b.vy *= -1; playSound('paddle'); }
+            if (b.y + b.r >= LOGICAL_H - 12) { b.y = LOGICAL_H - 12 - b.r; b.vy *= -1; playSound('paddle'); }
+
+            // Player Paddle Collision
+            if (b.vx < 0 && b.x - b.r <= p.x + p.w && b.x + b.r >= p.x && b.y >= p.y && b.y <= p.y + p.h) {
+                const rel = (b.y - (p.y + p.h / 2)) / (p.h / 2);
+                b.vx = Math.min(620, Math.abs(b.vx) * 1.07);
+                b.vy = rel * 320;
+                b.x = p.x + p.w + b.r;
+                playSound('paddle');
+            }
+
+            // CPU Paddle Collision
+            if (b.vx > 0 && b.x + b.r >= cpu.x && b.x - b.r <= cpu.x + cpu.w && b.y >= cpu.y && b.y <= cpu.y + cpu.h) {
+                const rel = (b.y - (cpu.y + cpu.h / 2)) / (cpu.h / 2);
+                b.vx = -Math.min(620, Math.abs(b.vx) * 1.07);
+                b.vy = rel * 320;
+                b.x = cpu.x - b.r;
+                playSound('paddle');
+            }
+
+            // Scoring
+            if (b.x < 0) {
+                cpu.score++;
+                gameState.lives = Math.max(0, 5 - cpu.score);
+                playSound('explosion');
+                updateHud();
+                if (cpu.score >= 5) {
+                    triggerGameOver('CPU SETİ KAZANDI (5-' + p.score + ')');
+                    return;
+                }
+                resetPongBall(1);
+            } else if (b.x > LOGICAL_W) {
+                p.score++;
+                gameState.score += 100;
+                playSound('eat');
+                updateHud();
+                if (p.score >= 5) {
+                    gameState.score += 200;
+                    updateHud();
+                    triggerGameOver('ŞAMPİYON! SETİ KAZANDIN (5-' + cpu.score + ')', true);
+                    return;
+                }
+                resetPongBall(-1);
+            }
+        }
+
+        function drawPong() {
+            ctx.fillStyle = '#060612';
+            ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+            // Top & Bottom Neon Borders
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillRect(0, 8, LOGICAL_W, 4);
+            ctx.fillRect(0, LOGICAL_H - 12, LOGICAL_W, 4);
+
+            // Center Dashed Net
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            for (let y = 20; y < LOGICAL_H - 20; y += 24) {
+                ctx.fillRect(LOGICAL_W / 2 - 2, y, 4, 12);
+            }
+
+            // Set Scores
+            ctx.font = '32px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(0, 243, 255, 0.35)';
+            ctx.fillText(pongState.player.score, LOGICAL_W / 2 - 80, 70);
+            ctx.fillStyle = 'rgba(255, 42, 133, 0.35)';
+            ctx.fillText(pongState.cpu.score, LOGICAL_W / 2 + 80, 70);
+
+            // Paddles
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillRect(pongState.player.x, pongState.player.y, pongState.player.w, pongState.player.h);
+
+            ctx.fillStyle = '#ff2a85';
+            ctx.fillRect(pongState.cpu.x, pongState.cpu.y, pongState.cpu.w, pongState.cpu.h);
+
+            // Ball
+            ctx.fillStyle = '#ffe600';
+            ctx.beginPath();
+            ctx.arc(pongState.ball.x, pongState.ball.y, pongState.ball.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME G: MAYIN TARLASI (8x8 RETRO MINESWEEPER)
+           -------------------------------------------------------------------------- */
+        let minesState = {
+            rows: 8,
+            cols: 8,
+            totalMines: 10,
+            grid: [],
+            flagMode: false,
+            cursor: { r: 0, c: 0 },
+            firstClick: true
+        };
+
+        function initMines() {
+            minesState.grid = [];
+            minesState.firstClick = true;
+            minesState.cursor = { r: 0, c: 0 };
+            for (let r = 0; r < minesState.rows; r++) {
+                const row = [];
+                for (let c = 0; c < minesState.cols; c++) {
+                    row.push({ mine: false, open: false, flag: false, count: 0 });
+                }
+                minesState.grid.push(row);
+            }
+        }
+
+        function placeMinesAvoiding(safeR, safeC) {
+            let placed = 0;
+            while (placed < minesState.totalMines) {
+                const r = Math.floor(Math.random() * minesState.rows);
+                const c = Math.floor(Math.random() * minesState.cols);
+                if (Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1) continue;
+                if (!minesState.grid[r][c].mine) {
+                    minesState.grid[r][c].mine = true;
+                    placed++;
+                }
+            }
+            // Calculate neighbor counts
+            for (let r = 0; r < minesState.rows; r++) {
+                for (let c = 0; c < minesState.cols; c++) {
+                    if (minesState.grid[r][c].mine) continue;
+                    let cnt = 0;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < minesState.rows && nc >= 0 && nc < minesState.cols) {
+                                if (minesState.grid[nr][nc].mine) cnt++;
+                            }
+                        }
+                    }
+                    minesState.grid[r][c].count = cnt;
+                }
+            }
+        }
+
+        function handleMinesClick(px, py, isFlag) {
+            const boardSize = 336;
+            const cell = boardSize / 8;
+            const startX = (LOGICAL_W - boardSize) / 2;
+            const startY = 85;
+            if (px < startX || px > startX + boardSize || py < startY || py > startY + boardSize) return;
+            const c = Math.floor((px - startX) / cell);
+            const r = Math.floor((py - startY) / cell);
+            minesState.cursor = { r, c };
+            revealOrFlagMine(r, c, isFlag);
+        }
+
+        function revealOrFlagMine(r, c, isFlag) {
+            const tile = minesState.grid[r][c];
+            if (tile.open) return;
+
+            if (isFlag) {
+                tile.flag = !tile.flag;
+                playSound('select');
+                return;
+            }
+
+            if (tile.flag) return;
+
+            if (minesState.firstClick) {
+                minesState.firstClick = false;
+                placeMinesAvoiding(r, c);
+            }
+
+            if (tile.mine) {
+                // Reveal all mines
+                minesState.grid.forEach(row => row.forEach(t => { if (t.mine) t.open = true; }));
+                drawMines();
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver('MAYINA BASTIN! BOOM!');
+                return;
+            }
+
+            floodRevealMines(r, c);
+            playSound('brick');
             updateHud();
-          }
-          if (pipes[i].x < -40) pipes.splice(i, 1);
+
+            // Check win condition
+            let closedSafe = 0;
+            minesState.grid.forEach(row => row.forEach(t => {
+                if (!t.mine && !t.open) closedSafe++;
+            }));
+
+            if (closedSafe === 0) {
+                gameState.score += 300;
+                updateHud();
+                triggerGameOver('MAYIN TARLASI TEMİZLENDİ! (+300)', true);
+            }
         }
-      } else if (targetBox.pulse > 0) {
-        targetBox.pulse = Math.max(0, targetBox.pulse - 0.1);
-      }
-    }
 
-    function renderFrame() {
-      ctx.fillStyle = "#060914";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function floodRevealMines(r, c) {
+            if (r < 0 || r >= minesState.rows || c < 0 || c >= minesState.cols) return;
+            const tile = minesState.grid[r][c];
+            if (tile.open || tile.flag || tile.mine) return;
 
-      ctx.strokeStyle = "rgba(0, 245, 212, 0.06)";
-      ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 32) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 32) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      }
+            tile.open = true;
+            gameState.score += 10;
 
-      if (activeGame.id === "snake") {
-        ctx.fillStyle = "#ff2a85";
-        ctx.fillRect(food.x * 20 + 2, food.y * 20 + 2, 16, 16);
-        snake.forEach((seg, idx) => {
-          ctx.fillStyle = idx === 0 ? "#00f5d4" : "#38bdf8";
-          ctx.fillRect(seg.x * 20 + 1, seg.y * 20 + 1, 18, 18);
-        });
-      } else if (activeGame.id === "xox") {
-        const startX = 170, startY = 90, cell = 100;
-        ctx.strokeStyle = "#00f5d4";
-        ctx.lineWidth = 3;
-        for (let i = 0; i < 9; i++) {
-          const r = Math.floor(i / 3), c = i % 3;
-          ctx.strokeRect(startX + c * cell, startY + r * cell, cell, cell);
-          if (xoxBoard[i]) {
-            ctx.fillStyle = xoxBoard[i] === "X" ? "#ff2a85" : "#ffd166";
-            ctx.font = "bold 44px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(xoxBoard[i], startX + c * cell + cell / 2, startY + r * cell + cell / 2);
-          }
+            if (tile.count === 0) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        if (dr !== 0 || dc !== 0) floodRevealMines(r + dr, c + dc);
+                    }
+                }
+            }
         }
-        ctx.textAlign = "start";
-      } else if (activeGame.id === "memory") {
-        const startX = 140, startY = 80, w = 84, h = 84, gap = 12;
-        memCards.forEach((sym, i) => {
-          const r = Math.floor(i / 4), c = i % 4;
-          const x = startX + c * (w + gap), y = startY + r * (h + gap);
-          const open = memMatched.includes(i) || memFlipped.includes(i);
-          ctx.fillStyle = open ? "#1e293b" : "#9b5de5";
-          ctx.fillRect(x, y, w, h);
-          if (open) {
-            ctx.font = "34px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(sym, x + w / 2, y + h / 2);
-            ctx.textAlign = "start";
-          }
-        });
-      } else if (activeGame.id === "pong") {
-        ctx.fillStyle = "#00f5d4";
-        ctx.fillRect(20, pongY, 12, 80);
-        ctx.fillStyle = "#ff2a85";
-        ctx.fillRect(canvas.width - 32, aiY, 12, 80);
-        ctx.fillStyle = "#ffd166";
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, 9, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (activeGame.id === "dodge") {
-        ctx.fillStyle = "#00f5d4";
-        ctx.fillRect(dodgeX - 18, canvas.height - 54, 36, 24);
-        ctx.fillStyle = "#ff2a85";
-        meteors.forEach((m) => {
-          ctx.beginPath();
-          ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      } else if (activeGame.id === "flappy") {
-        ctx.fillStyle = "#ffd166";
-        ctx.beginPath();
-        ctx.arc(140, birdY, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#00f5d4";
-        pipes.forEach((p) => {
-          ctx.fillRect(p.x - 20, 0, 40, p.gapY - 62);
-          ctx.fillRect(p.x - 20, p.gapY + 62, 40, canvas.height - (p.gapY + 62));
-        });
-      } else {
-        ctx.fillStyle = targetBox.pulse > 0 ? "rgba(255, 42, 133, 0.35)" : "rgba(0, 245, 212, 0.18)";
-        ctx.strokeStyle = targetBox.pulse > 0 ? "#ff2a85" : "#00f5d4";
-        ctx.lineWidth = 2;
-        ctx.fillRect(targetBox.x, targetBox.y, targetBox.size, targetBox.size);
-        ctx.strokeRect(targetBox.x, targetBox.y, targetBox.size, targetBox.size);
-        ctx.fillStyle = "#eef2ff";
-        ctx.font = "bold 16px sans-serif";
-        ctx.fillText(activeGame.name, 20, 32);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "13px sans-serif";
-        ctx.fillText("Boşluk / Aksiyon ile puan al veya yön tuşlarıyla hedefi taşı!", 20, 54);
-      }
 
-      if (!gameRunning && !gameOver) {
-        ctx.fillStyle = "rgba(5, 7, 15, 0.65)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#00f5d4";
-        ctx.font = "bold 28px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(activeGame.name.toUpperCase(), canvas.width / 2, canvas.height / 2 - 14);
-        ctx.fillStyle = "#ffd166";
-        ctx.font = "16px sans-serif";
-        ctx.fillText("Başlamak için 'Başlat / Yeniden' butonuna veya ekrana tıkla", canvas.width / 2, canvas.height / 2 + 18);
-        ctx.textAlign = "start";
-      }
+        function drawMines() {
+            drawIdleBackdrop();
 
-      if (gameOver) {
-        ctx.fillStyle = "rgba(5, 7, 15, 0.78)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#ff2a85";
-        ctx.font = "bold 32px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 12);
-        ctx.fillStyle = "#eef2ff";
-        ctx.font = "16px sans-serif";
-        ctx.fillText("Yeniden başlamak için Başlat veya Boşluk'a bas", canvas.width / 2, canvas.height / 2 + 24);
-        ctx.textAlign = "start";
-      }
-    }
+            let flagsCount = 0;
+            minesState.grid.forEach(row => row.forEach(t => { if (t.flag) flagsCount++; }));
 
-    function renderCatalog() {
-      const grid = document.getElementById("gameGrid");
-      const filtered = GAMES.filter((g) => {
-        const catOk = activeCategory === "Tümü" || g.cat === activeCategory;
-        const qOk = !searchQuery || g.name.toLowerCase().includes(searchQuery.toLowerCase()) || g.cat.toLowerCase().includes(searchQuery.toLowerCase());
-        return catOk && qOk;
-      });
-      grid.innerHTML = filtered
-        .map((g, idx) => `
-          <button type="button" class="game-item ${g.id === activeGame.id ? "active" : ""}" data-id="${g.id}">
-            <span class="game-num">#${String(idx + 1).padStart(2, "0")}</span>
-            <span class="game-name">${g.name}</span>
-            <span class="game-cat">${g.cat}</span>
-          </button>
-        `)
-        .join("");
-    }
+            ctx.font = '13px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ff2a85';
+            ctx.fillText(`💣 MAYIN: ${minesState.totalMines - flagsCount}`, LOGICAL_W / 2 - 130, 48);
+            ctx.fillStyle = minesState.flagMode ? '#ffe600' : '#00f3ff';
+            ctx.fillText(minesState.flagMode ? '🚩 BAYRAK MODU' : '⛏️ KAZI MODU', LOGICAL_W / 2 + 130, 48);
 
-    function selectGame(gameId) {
-      const found = GAMES.find((g) => g.id === gameId);
-      if (!found) return;
-      activeGame = found;
-      playSound("select");
-      renderCatalog();
-      renderLeaderboard();
-      resetGameState(false);
-      showToast("OYUN SEÇİLDİ", activeGame.name);
-    }
+            const boardSize = 336;
+            const cell = boardSize / 8;
+            const startX = (LOGICAL_W - boardSize) / 2;
+            const startY = 85;
+            const numColors = ['', '#00f3ff', '#39ff14', '#ff2a85', '#ffe600', '#ff7b00', '#a855f7', '#ffffff', '#94a3b8'];
 
-    document.getElementById("coinBtn").addEventListener("click", () => {
-      coins++;
-      playSound("coin");
-      updateHud();
-      showToast("JETON EKLENDİ", "Toplam jeton: " + coins);
-    });
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const tile = minesState.grid[r][c];
+                    const x = startX + c * cell;
+                    const y = startY + r * cell;
 
-    document.getElementById("crtBtn").addEventListener("click", (e) => {
-      crtOn = !crtOn;
-      document.getElementById("crtBox").classList.toggle("crt-enabled", crtOn);
-      e.currentTarget.textContent = crtOn ? "📺 CRT: AÇIK" : "📺 CRT: KAPALI";
-      playSound("select");
-    });
+                    if (tile.open) {
+                        ctx.fillStyle = tile.mine ? '#5c0a1e' : '#0d0d1f';
+                        ctx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+                        ctx.strokeStyle = '#252547';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x + 1, y + 1, cell - 2, cell - 2);
 
-    document.getElementById("soundBtn").addEventListener("click", (e) => {
-      soundOn = !soundOn;
-      e.currentTarget.textContent = soundOn ? "🔊 Ses: AÇIK" : "🔇 Ses: KAPALI";
-    });
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        if (tile.mine) {
+                            ctx.font = '22px sans-serif';
+                            ctx.fillText('💣', x + cell / 2, y + cell / 2 + 1);
+                        } else if (tile.count > 0) {
+                            ctx.font = '16px "Press Start 2P"';
+                            ctx.fillStyle = numColors[tile.count];
+                            ctx.fillText(tile.count, x + cell / 2, y + cell / 2 + 2);
+                        }
+                        ctx.textBaseline = 'alphabetic';
+                    } else {
+                        ctx.fillStyle = '#1d1d3b';
+                        ctx.fillRect(x + 2, y + 2, cell - 4, cell - 4);
+                        ctx.strokeStyle = '#3b3b6e';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x + 2, y + 2, cell - 4, cell - 4);
 
-    document.getElementById("startBtn").addEventListener("click", startOrRestartGame);
+                        if (tile.flag) {
+                            ctx.font = '20px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText('🚩', x + cell / 2, y + cell / 2 + 1);
+                            ctx.textBaseline = 'alphabetic';
+                        }
+                    }
 
-    canvas.addEventListener("click", () => {
-      if (!gameRunning || gameOver) {
-        startOrRestartGame();
-      } else {
-        handleAction();
-      }
-    });
+                    // Active cursor outline
+                    if (minesState.cursor.r === r && minesState.cursor.c === c) {
+                        ctx.strokeStyle = '#ffe600';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x + 2, y + 2, cell - 4, cell - 4);
+                    }
+                }
+            }
+        }
 
-    document.getElementById("actionBtn").addEventListener("click", handleAction);
+        /* --------------------------------------------------------------------------
+           MINI-GAME H: METEOR KAÇIŞI (ASTEROID DODGE)
+           -------------------------------------------------------------------------- */
+        let meteorState = {};
 
-    document.getElementById("extraModeBtn").addEventListener("click", (e) => {
-      if (activeGame.id === "xox") {
-        xoxVsCpu = !xoxVsCpu;
-        e.currentTarget.textContent = xoxVsCpu ? "Mod: 1P vs CPU" : "Mod: 2 Kişilik";
-        resetGameState(true);
-        showToast("XOX MODU", xoxVsCpu ? "Yapay zekaya karşı" : "2 Kişilik mod");
-      }
-    });
+        function initMeteor() {
+            meteorState = {
+                ship: { x: LOGICAL_W / 2, y: LOGICAL_H - 60, w: 32, h: 32, speed: 340 },
+                meteors: [],
+                stars: [],
+                spawnTimer: 0,
+                starTimer: 0
+            };
+        }
 
-    document.querySelectorAll(".dpad button[data-dir]").forEach((btn) => {
-      btn.addEventListener("click", () => handleDirection(btn.dataset.dir));
-    });
+        function updateMeteor(dt) {
+            const sec = dt / 1000;
+            const s = meteorState.ship;
+            if (keys['ArrowLeft'] || keys['KeyA']) s.x = Math.max(20, s.x - s.speed * sec);
+            if (keys['ArrowRight'] || keys['KeyD']) s.x = Math.min(LOGICAL_W - 20, s.x + s.speed * sec);
+            if (keys['ArrowUp'] || keys['KeyW']) s.y = Math.max(30, s.y - s.speed * sec);
+            if (keys['ArrowDown'] || keys['KeyS']) s.y = Math.min(LOGICAL_H - 30, s.y + s.speed * sec);
 
-    document.getElementById("saveNameBtn").addEventListener("click", savePlayerName);
-    document.getElementById("resetScoresBtn").addEventListener("click", resetScores);
+            meteorState.spawnTimer += dt;
+            if (meteorState.spawnTimer > Math.max(280, 650 - gameState.score * 0.25)) {
+                meteorState.spawnTimer = 0;
+                const r = 14 + Math.random() * 14;
+                meteorState.meteors.push({
+                    x: 24 + Math.random() * (LOGICAL_W - 48),
+                    y: -r,
+                    r,
+                    vy: 190 + Math.random() * 150 + gameState.score * 0.1
+                });
+            }
 
-    document.getElementById("categoryFilters").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-cat]");
-      if (!btn) return;
-      activeCategory = btn.dataset.cat;
-      document.querySelectorAll("#categoryFilters button").forEach((b) => b.classList.remove("btn-cyan"));
-      btn.classList.add("btn-cyan");
-      renderCatalog();
-    });
+            meteorState.starTimer += dt;
+            if (meteorState.starTimer > 1400) {
+                meteorState.starTimer = 0;
+                meteorState.stars.push({
+                    x: 30 + Math.random() * (LOGICAL_W - 60),
+                    y: -16,
+                    r: 12,
+                    vy: 150
+                });
+            }
 
-    document.getElementById("gameSearch").addEventListener("input", (e) => {
-      searchQuery = e.target.value.trim();
-      renderCatalog();
-    });
+            for (let i = meteorState.meteors.length - 1; i >= 0; i--) {
+                const m = meteorState.meteors[i];
+                m.y += m.vy * sec;
+                const dist = Math.hypot(m.x - s.x, m.y - s.y);
+                if (dist < m.r + 14) {
+                    meteorState.meteors.splice(i, 1);
+                    gameState.lives--;
+                    playSound('explosion');
+                    updateHud();
+                    if (gameState.lives <= 0) {
+                        triggerGameOver('GEMİ METEOR ÇARPMASINDA HASAR ALDI!');
+                        return;
+                    }
+                    continue;
+                }
+                if (m.y > LOGICAL_H + 30) {
+                    meteorState.meteors.splice(i, 1);
+                    gameState.score += 5;
+                    updateHud();
+                }
+            }
 
-    document.getElementById("gameGrid").addEventListener("click", (e) => {
-      const item = e.target.closest(".game-item[data-id]");
-      if (!item) return;
-      selectGame(item.dataset.id);
-      document.getElementById("oyun-kabini").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+            for (let i = meteorState.stars.length - 1; i >= 0; i--) {
+                const st = meteorState.stars[i];
+                st.y += st.vy * sec;
+                if (Math.hypot(st.x - s.x, st.y - s.y) < st.r + 16) {
+                    meteorState.stars.splice(i, 1);
+                    gameState.score += 30;
+                    playSound('eat');
+                    updateHud();
+                    continue;
+                }
+                if (st.y > LOGICAL_H + 20) meteorState.stars.splice(i, 1);
+            }
+        }
 
-    window.addEventListener("keydown", (e) => {
-      if (document.activeElement && document.activeElement.tagName === "INPUT") return;
-      const key = e.key.toLowerCase();
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
-        e.preventDefault();
-      }
-      if (key === "arrowup" || key === "w") handleDirection("up");
-      else if (key === "arrowdown" || key === "s") handleDirection("down");
-      else if (key === "arrowleft" || key === "a") handleDirection("left");
-      else if (key === "arrowright" || key === "d") handleDirection("right");
-      else if (key === " ") handleAction();
-    });
+        function drawMeteor() {
+            drawIdleBackdrop();
+            const s = meteorState.ship;
+            // Ship triangle
+            ctx.fillStyle = '#00f3ff';
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y - 18);
+            ctx.lineTo(s.x - 16, s.y + 14);
+            ctx.lineTo(s.x + 16, s.y + 14);
+            ctx.closePath();
+            ctx.fill();
 
-    document.getElementById("playerNameInput").value = getPlayerName();
-    renderCatalog();
-    renderLeaderboard();
-    resetGameState(false);
+            meteorState.meteors.forEach(m => {
+                ctx.fillStyle = '#ff2a85';
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-    setInterval(() => {
-      stepSimulation();
-      renderFrame();
-    }, 1000 / 60);
-  </script>
+            meteorState.stars.forEach(st => {
+                ctx.font = '20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⭐', st.x, st.y + 7);
+            });
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME I: RETRO KANAT (FLAPPY BIRD)
+           -------------------------------------------------------------------------- */
+        let flappyState = {};
+
+        function initFlappy() {
+            flappyState = {
+                bird: { x: 140, y: LOGICAL_H / 2, vy: 0, r: 14 },
+                pipes: [],
+                spawnTimer: 0,
+                gravity: 820,
+                jump: -290
+            };
+        }
+
+        function flapBird() {
+            if (!gameState.running || activeGame !== 'flappy') return;
+            flappyState.bird.vy = flappyState.jump;
+            playSound('paddle');
+        }
+
+        function updateFlappy(dt) {
+            const sec = dt / 1000;
+            const b = flappyState.bird;
+            b.vy += flappyState.gravity * sec;
+            b.y += b.vy * sec;
+
+            if (b.y - b.r < 0 || b.y + b.r > LOGICAL_H) {
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver('KANATLAR YERE ÇARPTI!');
+                return;
+            }
+
+            flappyState.spawnTimer += dt;
+            if (flappyState.spawnTimer > 1550) {
+                flappyState.spawnTimer = 0;
+                const gap = 136;
+                const topH = 60 + Math.random() * (LOGICAL_H - gap - 130);
+                flappyState.pipes.push({ x: LOGICAL_W + 20, w: 54, topH, gap, passed: false });
+            }
+
+            for (let i = flappyState.pipes.length - 1; i >= 0; i--) {
+                const p = flappyState.pipes[i];
+                p.x -= 210 * sec;
+
+                if (!p.passed && p.x + p.w < b.x) {
+                    p.passed = true;
+                    gameState.score += 20;
+                    playSound('eat');
+                    updateHud();
+                }
+
+                const hitX = b.x + b.r > p.x && b.x - b.r < p.x + p.w;
+                const hitTop = b.y - b.r < p.topH;
+                const hitBot = b.y + b.r > p.topH + p.gap;
+                if (hitX && (hitTop || hitBot)) {
+                    gameState.lives = 0;
+                    updateHud();
+                    triggerGameOver('NEON BORUYA ÇARPTIN!');
+                    return;
+                }
+
+                if (p.x + p.w < -30) flappyState.pipes.splice(i, 1);
+            }
+        }
+
+        function drawFlappy() {
+            ctx.fillStyle = '#070918';
+            ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+            flappyState.pipes.forEach(p => {
+                ctx.fillStyle = '#39ff14';
+                ctx.fillRect(p.x, 0, p.w, p.topH);
+                ctx.fillRect(p.x, p.topH + p.gap, p.w, LOGICAL_H - (p.topH + p.gap));
+                ctx.strokeStyle = '#00f3ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x, 0, p.w, p.topH);
+                ctx.strokeRect(p.x, p.topH + p.gap, p.w, LOGICAL_H - (p.topH + p.gap));
+            });
+
+            ctx.fillStyle = '#ffe600';
+            ctx.beginPath();
+            ctx.arc(flappyState.bird.x, flappyState.bird.y, flappyState.bird.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff2a85';
+            ctx.fillRect(flappyState.bird.x + 12, flappyState.bird.y - 3, 8, 6);
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME J: 2048 NEON (4x4 SLIDING TILE PUZZLE)
+           -------------------------------------------------------------------------- */
+        let g2048State = { grid: [] };
+
+        function init2048() {
+            g2048State.grid = Array.from({ length: 4 }, () => Array(4).fill(0));
+            spawn2048Tile();
+            spawn2048Tile();
+        }
+
+        function spawn2048Tile() {
+            const empty = [];
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    if (g2048State.grid[r][c] === 0) empty.push([r, c]);
+                }
+            }
+            if (empty.length === 0) return false;
+            const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+            g2048State.grid[r][c] = Math.random() < 0.85 ? 2 : 4;
+            return true;
+        }
+
+        function compressAndMergeLine(line) {
+            const filtered = line.filter(v => v !== 0);
+            const merged = [];
+            let gained = 0;
+            for (let i = 0; i < filtered.length; i++) {
+                if (i + 1 < filtered.length && filtered[i] === filtered[i + 1]) {
+                    const val = filtered[i] * 2;
+                    merged.push(val);
+                    gained += val;
+                    i++;
+                } else {
+                    merged.push(filtered[i]);
+                }
+            }
+            while (merged.length < 4) merged.push(0);
+            return { line: merged, gained };
+        }
+
+        function slide2048(dir) {
+            if (!gameState.running || activeGame !== 'g2048') return;
+            const before = JSON.stringify(g2048State.grid);
+            let totalGained = 0;
+            const g = g2048State.grid;
+
+            if (dir === 'LEFT' || dir === 'RIGHT') {
+                for (let r = 0; r < 4; r++) {
+                    let row = [...g[r]];
+                    if (dir === 'RIGHT') row.reverse();
+                    const res = compressAndMergeLine(row);
+                    if (dir === 'RIGHT') res.line.reverse();
+                    g[r] = res.line;
+                    totalGained += res.gained;
+                }
+            } else {
+                for (let c = 0; c < 4; c++) {
+                    let col = [g[0][c], g[1][c], g[2][c], g[3][c]];
+                    if (dir === 'DOWN') col.reverse();
+                    const res = compressAndMergeLine(col);
+                    if (dir === 'DOWN') res.line.reverse();
+                    for (let r = 0; r < 4; r++) g[r][c] = res.line[r];
+                    totalGained += res.gained;
+                }
+            }
+
+            if (JSON.stringify(g) !== before) {
+                gameState.score += totalGained;
+                playSound(totalGained > 0 ? 'eat' : 'paddle');
+                updateHud();
+                spawn2048Tile();
+
+                const has2048 = g.some(row => row.includes(2048));
+                if (has2048) {
+                    triggerGameOver('2048 NEON KARE OLUŞTURULDU!', true);
+                    return;
+                }
+                if (!has2048Moves()) {
+                    gameState.lives = 0;
+                    updateHud();
+                    triggerGameOver('HAMLE KALMADI - 2048 BİTTİ!');
+                }
+            }
+        }
+
+        function has2048Moves() {
+            const g = g2048State.grid;
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    if (g[r][c] === 0) return true;
+                    if (c < 3 && g[r][c] === g[r][c + 1]) return true;
+                    if (r < 3 && g[r][c] === g[r + 1][c]) return true;
+                }
+            }
+            return false;
+        }
+
+        function draw2048() {
+            drawIdleBackdrop();
+            const size = 340;
+            const startX = (LOGICAL_W - size) / 2;
+            const startY = 70;
+            const gap = 10;
+            const tile = (size - gap * 5) / 4;
+
+            ctx.fillStyle = '#14142b';
+            ctx.fillRect(startX, startY, size, size);
+            ctx.strokeStyle = '#00f3ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, size, size);
+
+            const tileColors = {
+                2: '#1e3a8a', 4: '#0e7490', 8: '#15803d', 16: '#a16207',
+                32: '#c2410c', 64: '#be123c', 128: '#7e22ce', 256: '#4338ca',
+                512: '#047857', 1024: '#b45309', 2048: '#ffe600'
+            };
+
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const val = g2048State.grid[r][c];
+                    const x = startX + gap + c * (tile + gap);
+                    const y = startY + gap + r * (tile + gap);
+                    ctx.fillStyle = val === 0 ? '#090916' : (tileColors[val] || '#ff2a85');
+                    ctx.fillRect(x, y, tile, tile);
+                    if (val > 0) {
+                        ctx.fillStyle = val === 2048 ? '#000' : '#fff';
+                        ctx.font = val >= 1024 ? '14px "Press Start 2P"' : '18px "Press Start 2P"';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(val, x + tile / 2, y + tile / 2 + 1);
+                        ctx.textBaseline = 'alphabetic';
+                    }
+                }
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME K: RENK SIMON (4-PAD SEQUENCE MEMORY)
+           -------------------------------------------------------------------------- */
+        let simonState = {};
+
+        function initSimon() {
+            simonState = {
+                seq: [],
+                playerIdx: 0,
+                activePad: -1,
+                showing: false,
+                round: 1
+            };
+            addSimonStep();
+        }
+
+        function addSimonStep() {
+            simonState.seq.push(Math.floor(Math.random() * 4));
+            simonState.playerIdx = 0;
+            simonState.showing = true;
+            playSimonSequence();
+        }
+
+        function playSimonSequence() {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (!gameState.running || activeGame !== 'simon') {
+                    clearInterval(interval);
+                    return;
+                }
+                if (i >= simonState.seq.length) {
+                    clearInterval(interval);
+                    simonState.activePad = -1;
+                    simonState.showing = false;
+                    return;
+                }
+                simonState.activePad = simonState.seq[i];
+                playSound('paddle');
+                setTimeout(() => {
+                    if (simonState.activePad === simonState.seq[i - 1]) simonState.activePad = -1;
+                }, 260);
+                i++;
+            }, 520);
+        }
+
+        function handleSimonClick(px, py) {
+            const pads = getSimonPadRects();
+            pads.forEach((p, idx) => {
+                if (px >= p.x && px <= p.x + p.w && py >= p.y && py <= p.y + p.h) {
+                    pressSimonPad(idx);
+                }
+            });
+        }
+
+        function pressSimonPad(padIdx) {
+            if (!gameState.running || activeGame !== 'simon' || simonState.showing) return;
+            simonState.activePad = padIdx;
+            setTimeout(() => { if (simonState.activePad === padIdx) simonState.activePad = -1; }, 200);
+
+            if (simonState.seq[simonState.playerIdx] === padIdx) {
+                playSound('eat');
+                simonState.playerIdx++;
+                if (simonState.playerIdx >= simonState.seq.length) {
+                    gameState.score += simonState.round * 50;
+                    simonState.round++;
+                    updateHud();
+                    setTimeout(() => {
+                        if (gameState.running && activeGame === 'simon') addSimonStep();
+                    }, 550);
+                }
+            } else {
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver(`YANLIŞ RENK! ${simonState.round}. TURA ULAŞTIN`);
+            }
+        }
+
+        function getSimonPadRects() {
+            const w = 135, h = 135, gap = 20;
+            const sx = (LOGICAL_W - (w * 2 + gap)) / 2;
+            const sy = 115;
+            return [
+                { x: sx, y: sy, w, h, base: '#16a34a', glow: '#4ade80', label: '▲ / 1' },
+                { x: sx + w + gap, y: sy, w, h, base: '#dc2626', glow: '#f87171', label: '▶ / 2' },
+                { x: sx + w + gap, y: sy + h + gap, w, h, base: '#ca8a04', glow: '#facc15', label: '▼ / 3' },
+                { x: sx, y: sy + h + gap, w, h, base: '#2563eb', glow: '#60a5fa', label: '◀ / 4' }
+            ];
+        }
+
+        function drawSimon() {
+            drawIdleBackdrop();
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillText(`TUR: ${simonState.round}  |  ${simonState.showing ? 'İZLE...' : 'SIRA SENDE!'}`, LOGICAL_W / 2, 65);
+
+            const pads = getSimonPadRects();
+            pads.forEach((p, idx) => {
+                const isLit = simonState.activePad === idx;
+                ctx.fillStyle = isLit ? p.glow : p.base;
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.strokeStyle = isLit ? '#ffffff' : '#00f3ff';
+                ctx.lineWidth = isLit ? 5 : 2;
+                ctx.strokeRect(p.x, p.y, p.w, p.h);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '11px "Press Start 2P"';
+                ctx.fillText(p.label, p.x + p.w / 2, p.y + p.h / 2 + 4);
+            });
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME L: HIZLI REFLEKS (TARGET REFLEX TIMER)
+           -------------------------------------------------------------------------- */
+        let reflexState = {};
+
+        function initReflex() {
+            reflexState = {
+                timeLeft: 30,
+                target: { x: LOGICAL_W / 2, y: LOGICAL_H / 2, r: 30, gold: false },
+                moveTimer: 0
+            };
+        }
+
+        function spawnReflexTarget() {
+            reflexState.target = {
+                x: 80 + Math.random() * (LOGICAL_W - 160),
+                y: 110 + Math.random() * (LOGICAL_H - 180),
+                r: 28,
+                gold: Math.random() < 0.25
+            };
+            reflexState.moveTimer = 0;
+        }
+
+        function handleReflexClick(px, py) {
+            const t = reflexState.target;
+            if (Math.hypot(px - t.x, py - t.y) <= t.r + 8) {
+                gameState.score += t.gold ? 35 : 15;
+                playSound('eat');
+                updateHud();
+                spawnReflexTarget();
+            } else {
+                gameState.score = Math.max(0, gameState.score - 5);
+                playSound('paddle');
+                updateHud();
+            }
+        }
+
+        function hitReflexByCursor() {
+            handleReflexClick(reflexState.target.x, reflexState.target.y);
+        }
+
+        function updateReflex(dt) {
+            reflexState.timeLeft -= dt / 1000;
+            reflexState.moveTimer += dt;
+            if (reflexState.moveTimer > 1400) {
+                spawnReflexTarget();
+            }
+            if (reflexState.timeLeft <= 0) {
+                reflexState.timeLeft = 0;
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver('SÜRE DOLDU! REFLEKS SKORUN KAYDEDİLDİ', gameState.score >= 200);
+            }
+        }
+
+        function drawReflex() {
+            drawIdleBackdrop();
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = reflexState.timeLeft < 6 ? '#ff2a85' : '#ffe600';
+            ctx.fillText(`KALAN SÜRE: ${Math.ceil(reflexState.timeLeft)}sn`, LOGICAL_W / 2, 55);
+
+            const t = reflexState.target;
+            ctx.fillStyle = t.gold ? '#ffe600' : '#ff2a85';
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#070710';
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.r * 0.45, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME M: KURBAĞA GEÇİŞİ (FROGGER)
+           -------------------------------------------------------------------------- */
+        let froggerState = {};
+
+        function initFrogger() {
+            froggerState = {
+                frog: { x: LOGICAL_W / 2, y: LOGICAL_H - 36, size: 24 },
+                cars: [
+                    { x: 40, y: 360, w: 64, h: 26, vx: 130, color: '#ff2a85' },
+                    { x: 340, y: 360, w: 64, h: 26, vx: 130, color: '#ff2a85' },
+                    { x: 120, y: 295, w: 72, h: 26, vx: -175, color: '#00f3ff' },
+                    { x: 460, y: 295, w: 72, h: 26, vx: -175, color: '#00f3ff' },
+                    { x: 80, y: 230, w: 58, h: 26, vx: 215, color: '#ffe600' },
+                    { x: 380, y: 230, w: 58, h: 26, vx: 215, color: '#ffe600' },
+                    { x: 200, y: 165, w: 76, h: 26, vx: -240, color: '#ff7b00' }
+                ]
+            };
+        }
+
+        function moveFrogger(dx, dy) {
+            if (!gameState.running || activeGame !== 'frogger') return;
+            const step = 36;
+            froggerState.frog.x = Math.max(20, Math.min(LOGICAL_W - 20, froggerState.frog.x + dx * step));
+            froggerState.frog.y = Math.max(70, Math.min(LOGICAL_H - 30, froggerState.frog.y + dy * step));
+            playSound('paddle');
+
+            if (froggerState.frog.y <= 95) {
+                gameState.score += 100;
+                playSound('win');
+                updateHud();
+                froggerState.frog.x = LOGICAL_W / 2;
+                froggerState.frog.y = LOGICAL_H - 36;
+            }
+        }
+
+        function updateFrogger(dt) {
+            const sec = dt / 1000;
+            const f = froggerState.frog;
+            for (const c of froggerState.cars) {
+                c.x += c.vx * sec;
+                if (c.vx > 0 && c.x > LOGICAL_W + 20) c.x = -c.w - 10;
+                if (c.vx < 0 && c.x + c.w < -20) c.x = LOGICAL_W + 10;
+
+                const hit = f.x + 10 > c.x && f.x - 10 < c.x + c.w && f.y + 10 > c.y && f.y - 10 < c.y + c.h;
+                if (hit) {
+                    gameState.lives--;
+                    playSound('explosion');
+                    updateHud();
+                    f.x = LOGICAL_W / 2;
+                    f.y = LOGICAL_H - 36;
+                    if (gameState.lives <= 0) {
+                        triggerGameOver('OTOYOLDA ARAÇ ÇARPTI!');
+                        return;
+                    }
+                }
+            }
+        }
+
+        function drawFrogger() {
+            ctx.fillStyle = '#090916';
+            ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+            // Safe Goal Zone at Top
+            ctx.fillStyle = 'rgba(57, 255, 20, 0.2)';
+            ctx.fillRect(0, 60, LOGICAL_W, 55);
+            ctx.font = '12px "Press Start 2P"';
+            ctx.fillStyle = '#39ff14';
+            ctx.textAlign = 'center';
+            ctx.fillText('GÜVENLİ LİMAN', LOGICAL_W / 2, 92);
+
+            // Cars
+            froggerState.cars.forEach(c => {
+                ctx.fillStyle = c.color;
+                ctx.fillRect(c.x, c.y, c.w, c.h);
+            });
+
+            // Frog
+            ctx.font = '24px sans-serif';
+            ctx.fillText('🐸', froggerState.frog.x, froggerState.frog.y + 8);
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME N: HIZ YARIŞI / OTOBAN (HIGHWAY RACER)
+           -------------------------------------------------------------------------- */
+        let racerState = {};
+
+        function initRacer() {
+            racerState = {
+                lane: 1,
+                carY: LOGICAL_H - 85,
+                traffic: [],
+                spawnTimer: 0,
+                roadOffset: 0
+            };
+        }
+
+        function getLaneCenterX(lane) {
+            return LOGICAL_W / 2 - 110 + lane * 110;
+        }
+
+        function shiftRacerLane(dir) {
+            if (!gameState.running || activeGame !== 'racer') return;
+            const next = Math.max(0, Math.min(2, racerState.lane + dir));
+            if (next !== racerState.lane) {
+                racerState.lane = next;
+                playSound('paddle');
+            }
+        }
+
+        function updateRacer(dt) {
+            const sec = dt / 1000;
+            const boost = (keys['ArrowUp'] || keys['KeyW']) ? 1.55 : 1.0;
+            const speed = (280 + gameState.score * 0.12) * boost;
+            racerState.roadOffset = (racerState.roadOffset + speed * sec) % 60;
+
+            racerState.spawnTimer += dt / boost;
+            if (racerState.spawnTimer > 780) {
+                racerState.spawnTimer = 0;
+                racerState.traffic.push({
+                    lane: Math.floor(Math.random() * 3),
+                    y: -70,
+                    w: 44,
+                    h: 68,
+                    vy: speed * 0.62,
+                    color: Math.random() > 0.5 ? '#ff2a85' : '#ffe600'
+                });
+            }
+
+            const px = getLaneCenterX(racerState.lane);
+            for (let i = racerState.traffic.length - 1; i >= 0; i--) {
+                const t = racerState.traffic[i];
+                t.y += t.vy * sec;
+                const tx = getLaneCenterX(t.lane);
+
+                if (Math.abs(px - tx) < 36 && Math.abs(racerState.carY - t.y) < 58) {
+                    racerState.traffic.splice(i, 1);
+                    gameState.lives--;
+                    playSound('explosion');
+                    updateHud();
+                    if (gameState.lives <= 0) {
+                        triggerGameOver('OTOBANDA KAZA YAPTIN!');
+                        return;
+                    }
+                    continue;
+                }
+
+                if (t.y > LOGICAL_H + 60) {
+                    racerState.traffic.splice(i, 1);
+                    gameState.score += 20;
+                    updateHud();
+                }
+            }
+        }
+
+        function drawRacer() {
+            ctx.fillStyle = '#070712';
+            ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+            // 3-lane highway strip
+            const roadW = 330;
+            const roadX = (LOGICAL_W - roadW) / 2;
+            ctx.fillStyle = '#141426';
+            ctx.fillRect(roadX, 0, roadW, LOGICAL_H);
+            ctx.strokeStyle = '#00f3ff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(roadX, 0, roadW, LOGICAL_H);
+
+            // Dashed lane dividers
+            ctx.fillStyle = 'rgba(255, 230, 0, 0.5)';
+            for (let l = 1; l <= 2; l++) {
+                const lx = roadX + l * 110;
+                for (let y = -60 + racerState.roadOffset; y < LOGICAL_H; y += 60) {
+                    ctx.fillRect(lx - 2, y, 4, 30);
+                }
+            }
+
+            // Traffic cars
+            racerState.traffic.forEach(t => {
+                ctx.fillStyle = t.color;
+                ctx.fillRect(getLaneCenterX(t.lane) - t.w / 2, t.y - t.h / 2, t.w, t.h);
+            });
+
+            // Player F1/Retro car
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillRect(getLaneCenterX(racerState.lane) - 22, racerState.carY - 34, 44, 68);
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME O: KELİME AVI / ADAM ASMACA (TURKISH WORD GUESS)
+           -------------------------------------------------------------------------- */
+        const TR_ALPHABET = ['A','B','C','Ç','D','E','F','G','Ğ','H','I','İ','J','K','L','M','N','O','Ö','P','R','S','Ş','T','U','Ü','V','Y','Z'];
+        const HANGMAN_WORDS = ['ATARI','KASET','JETON','PIKSEL','GALAKSI','KONSOL','LABIRENT','KOMANDO','TURBO','NEON'];
+        let hangmanState = {};
+
+        function initHangman() {
+            const word = HANGMAN_WORDS[Math.floor(Math.random() * HANGMAN_WORDS.length)];
+            hangmanState = {
+                word,
+                guessed: new Set(),
+                wrong: 0,
+                maxWrong: 6
+            };
+            renderHangmanButtons();
+        }
+
+        function renderHangmanButtons() {
+            const grid = document.getElementById('hangmanLettersGrid');
+            grid.innerHTML = TR_ALPHABET.map(ch => {
+                const used = hangmanState.guessed && hangmanState.guessed.has(ch);
+                return `<button onclick="guessHangmanLetter('${ch}')" ${used ? 'disabled' : ''} class="px-2 py-1.5 rounded font-arcade text-[9px] ${used ? 'bg-slate-800 text-slate-600' : 'bg-[#1c1c3a] text-[#00f3ff] hover:bg-[#ff2a85] hover:text-white'} border border-slate-600 cursor-pointer">${ch}</button>`;
+            }).join('');
+        }
+
+        function guessHangmanLetter(ch) {
+            if (!gameState.running || activeGame !== 'hangman') return;
+            if (hangmanState.guessed.has(ch)) return;
+            hangmanState.guessed.add(ch);
+            renderHangmanButtons();
+
+            if (hangmanState.word.includes(ch)) {
+                playSound('eat');
+                gameState.score += 25;
+                updateHud();
+                const solved = [...hangmanState.word].every(c => hangmanState.guessed.has(c));
+                if (solved) {
+                    gameState.score += 150;
+                    updateHud();
+                    triggerGameOver(`KELİME BİLİNDİ: ${hangmanState.word}!`, true);
+                }
+            } else {
+                hangmanState.wrong++;
+                gameState.lives = Math.max(0, hangmanState.maxWrong - hangmanState.wrong);
+                playSound('explosion');
+                updateHud();
+                if (hangmanState.wrong >= hangmanState.maxWrong) {
+                    triggerGameOver(`HAKKIN BİTTİ! KELİME: ${hangmanState.word}`);
+                }
+            }
+        }
+
+        function drawHangman() {
+            drawIdleBackdrop();
+
+            // Gallows lines
+            ctx.strokeStyle = '#00f3ff';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(140, 260); ctx.lineTo(240, 260);
+            ctx.moveTo(190, 260); ctx.lineTo(190, 90);
+            ctx.lineTo(270, 90); ctx.lineTo(270, 120);
+            ctx.stroke();
+
+            // Draw stick figure parts based on wrong count
+            ctx.strokeStyle = '#ff2a85';
+            if (hangmanState.wrong >= 1) { ctx.beginPath(); ctx.arc(270, 138, 18, 0, Math.PI * 2); ctx.stroke(); }
+            if (hangmanState.wrong >= 2) { ctx.beginPath(); ctx.moveTo(270, 156); ctx.lineTo(270, 210); ctx.stroke(); }
+            if (hangmanState.wrong >= 3) { ctx.beginPath(); ctx.moveTo(270, 170); ctx.lineTo(245, 195); ctx.stroke(); }
+            if (hangmanState.wrong >= 4) { ctx.beginPath(); ctx.moveTo(270, 170); ctx.lineTo(295, 195); ctx.stroke(); }
+            if (hangmanState.wrong >= 5) { ctx.beginPath(); ctx.moveTo(270, 210); ctx.lineTo(250, 245); ctx.stroke(); }
+            if (hangmanState.wrong >= 6) { ctx.beginPath(); ctx.moveTo(270, 210); ctx.lineTo(290, 245); ctx.stroke(); }
+
+            // Masked word display
+            const display = [...hangmanState.word].map(c => hangmanState.guessed.has(c) ? c : '_').join(' ');
+            ctx.font = '24px "Press Start 2P"';
+            ctx.fillStyle = '#ffe600';
+            ctx.textAlign = 'center';
+            ctx.fillText(display, LOGICAL_W / 2 + 60, 195);
+
+            ctx.font = '12px "Press Start 2P"';
+            ctx.fillStyle = '#39ff14';
+            ctx.fillText(`KALAN HATA HAKKI: ${hangmanState.maxWrong - hangmanState.wrong}`, LOGICAL_W / 2, 330);
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME P: ZAR & 21 BLACKJACK
+           -------------------------------------------------------------------------- */
+        let bjState = {};
+
+        function drawCardVal() {
+            const ranks = [2,3,4,5,6,7,8,9,10,10,10,10,11];
+            return ranks[Math.floor(Math.random() * ranks.length)];
+        }
+
+        function handSum(cards) {
+            let sum = cards.reduce((a, b) => a + b, 0);
+            let aces = cards.filter(c => c === 11).length;
+            while (sum > 21 && aces > 0) {
+                sum -= 10;
+                aces--;
+            }
+            return sum;
+        }
+
+        function initBlackjack() {
+            bjState = {
+                player: [drawCardVal(), drawCardVal()],
+                dealer: [drawCardVal()],
+                finished: false,
+                statusText: 'KART ÇEK (ATEŞ) VEYA KAL (STAND)'
+            };
+        }
+
+        function blackjackHitAction() {
+            if (!gameState.running || activeGame !== 'blackjack' || bjState.finished) return;
+            bjState.player.push(drawCardVal());
+            playSound('paddle');
+            const pSum = handSum(bjState.player);
+            if (pSum > 21) {
+                bjState.finished = true;
+                gameState.lives--;
+                updateHud();
+                if (gameState.lives <= 0) triggerGameOver(`21'İ GEÇTİN (${pSum})!`);
+                else {
+                    bjState.statusText = `21'İ GEÇTİN (${pSum})! YENİ EL İÇİN BAŞLAT'A BAS.`;
+                    showToast('EL KAYBEDİLDİ', `Toplamın ${pSum}. Yeni el için YENİDEN BAŞLAT'a bas.`);
+                }
+            } else if (pSum === 21) {
+                blackjackStandAction();
+            }
+        }
+
+        function blackjackStandAction() {
+            if (!gameState.running || activeGame !== 'blackjack' || bjState.finished) return;
+            bjState.finished = true;
+            while (handSum(bjState.dealer) < 17) {
+                bjState.dealer.push(drawCardVal());
+            }
+            const pSum = handSum(bjState.player);
+            const dSum = handSum(bjState.dealer);
+            if (dSum > 21 || pSum > dSum) {
+                gameState.score += 150;
+                playSound('win');
+                bjState.statusText = `KAZANDIN! SEN: ${pSum} - KASA: ${dSum} (+150)`;
+            } else if (pSum === dSum) {
+                gameState.score += 50;
+                playSound('select');
+                bjState.statusText = `BERABERE (${pSum}) (+50)`;
+            } else {
+                gameState.lives--;
+                playSound('explosion');
+                bjState.statusText = `KASA KAZANDI! SEN: ${pSum} - KASA: ${dSum}`;
+            }
+            updateHud();
+            if (gameState.lives <= 0) triggerGameOver(bjState.statusText);
+        }
+
+        function drawBlackjack() {
+            drawIdleBackdrop();
+            ctx.textAlign = 'center';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.fillStyle = '#ffe600';
+            ctx.fillText(bjState.statusText, LOGICAL_W / 2, 55);
+
+            ctx.fillStyle = '#ff2a85';
+            ctx.fillText(`KASA ELİ (${handSum(bjState.dealer)})`, LOGICAL_W / 2, 125);
+            bjState.dealer.forEach((v, idx) => {
+                const x = LOGICAL_W / 2 - (bjState.dealer.length * 42) + idx * 84;
+                ctx.fillStyle = '#1b1b38';
+                ctx.fillRect(x, 145, 64, 88);
+                ctx.strokeStyle = '#ff2a85';
+                ctx.strokeRect(x, 145, 64, 88);
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px "Press Start 2P"';
+                ctx.fillText(v, x + 32, 198);
+            });
+
+            ctx.fillStyle = '#00f3ff';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.fillText(`SENİN ELİN (${handSum(bjState.player)})`, LOGICAL_W / 2, 285);
+            bjState.player.forEach((v, idx) => {
+                const x = LOGICAL_W / 2 - (bjState.player.length * 42) + idx * 84;
+                ctx.fillStyle = '#12263a';
+                ctx.fillRect(x, 305, 64, 88);
+                ctx.strokeStyle = '#00f3ff';
+                ctx.strokeRect(x, 305, 64, 88);
+                ctx.fillStyle = '#39ff14';
+                ctx.font = '20px "Press Start 2P"';
+                ctx.fillText(v, x + 32, 358);
+            });
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME Q: SAVAŞ GEMİSİ RADARI (6x6 BATTLESHIP SALVO)
+           -------------------------------------------------------------------------- */
+        let bsState = {};
+
+        function initBattleship() {
+            const grid = Array.from({ length: 6 }, () => Array(6).fill(0)); // 0=empty, 1=ship
+            // Place one 3-cell ship and two 2-cell ships
+            const ships = [3, 2, 2];
+            for (const len of ships) {
+                let placed = false;
+                while (!placed) {
+                    const horiz = Math.random() < 0.5;
+                    const r = Math.floor(Math.random() * (horiz ? 6 : 6 - len + 1));
+                    const c = Math.floor(Math.random() * (horiz ? 6 - len + 1 : 6));
+                    let free = true;
+                    for (let k = 0; k < len; k++) {
+                        if (grid[r + (horiz ? 0 : k)][c + (horiz ? k : 0)] === 1) free = false;
+                    }
+                    if (free) {
+                        for (let k = 0; k < len; k++) {
+                            grid[r + (horiz ? 0 : k)][c + (horiz ? k : 0)] = 1;
+                        }
+                        placed = true;
+                    }
+                }
+            }
+            bsState = {
+                grid,
+                shots: Array.from({ length: 6 }, () => Array(6).fill(0)), // 0=unknown, 1=miss, 2=hit
+                ammo: 20,
+                cursor: { r: 0, c: 0 }
+            };
+        }
+
+        function handleBattleshipClick(px, py) {
+            const size = 300;
+            const sx = (LOGICAL_W - size) / 2;
+            const sy = 95;
+            if (px < sx || px > sx + size || py < sy || py > sy + size) return;
+            const c = Math.floor((px - sx) / (size / 6));
+            const r = Math.floor((py - sy) / (size / 6));
+            bsState.cursor = { r, c };
+            fireBattleshipCell(r, c);
+        }
+
+        function fireBattleshipCell(r, c) {
+            if (!gameState.running || activeGame !== 'battleship') return;
+            if (bsState.shots[r][c] !== 0 || bsState.ammo <= 0) return;
+
+            bsState.ammo--;
+            if (bsState.grid[r][c] === 1) {
+                bsState.shots[r][c] = 2;
+                gameState.score += 100;
+                playSound('explosion');
+            } else {
+                bsState.shots[r][c] = 1;
+                playSound('paddle');
+            }
+            updateHud();
+
+            let totalShipCells = 0, hitCells = 0;
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 6; j++) {
+                    if (bsState.grid[i][j] === 1) {
+                        totalShipCells++;
+                        if (bsState.shots[i][j] === 2) hitCells++;
+                    }
+                }
+            }
+
+            if (hitCells >= totalShipCells) {
+                gameState.score += bsState.ammo * 25;
+                updateHud();
+                triggerGameOver('TÜM DÜŞMAN GEMİLERİ BATIRILDI!', true);
+            } else if (bsState.ammo <= 0) {
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver('RADAR MERMİLERİ TÜKENDİ!');
+            }
+        }
+
+        function drawBattleship() {
+            drawIdleBackdrop();
+            ctx.font = '13px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillText(`KALAN ATIŞ: ${bsState.ammo}`, LOGICAL_W / 2, 55);
+
+            const size = 300;
+            const cell = size / 6;
+            const sx = (LOGICAL_W - size) / 2;
+            const sy = 95;
+
+            for (let r = 0; r < 6; r++) {
+                for (let c = 0; c < 6; c++) {
+                    const x = sx + c * cell;
+                    const y = sy + r * cell;
+                    const st = bsState.shots[r][c];
+                    ctx.fillStyle = st === 2 ? '#7f1d1d' : (st === 1 ? '#1e293b' : '#0b192c');
+                    ctx.fillRect(x + 2, y + 2, cell - 4, cell - 4);
+                    ctx.strokeStyle = '#00f3ff';
+                    ctx.lineWidth = (bsState.cursor.r === r && bsState.cursor.c === c) ? 3 : 1;
+                    ctx.strokeRect(x + 2, y + 2, cell - 4, cell - 4);
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '20px sans-serif';
+                    if (st === 2) ctx.fillText('💥', x + cell / 2, y + cell / 2 + 1);
+                    else if (st === 1) ctx.fillText('💧', x + cell / 2, y + cell / 2 + 1);
+                    ctx.textBaseline = 'alphabetic';
+                }
+            }
+        }
+
+        /* --------------------------------------------------------------------------
+           MINI-GAME R: LABİRENT KAÇIŞI (GRID MAZE ESCAPE)
+           -------------------------------------------------------------------------- */
+        let mazeState = {};
+
+        function initMaze() {
+            // 15x11 grid maze (1=wall, 0=path)
+            const layout = [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,1,0,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,1,1,1,1,0,1,0,1,0,1,1,1],
+                [1,0,0,0,0,0,0,0,1,0,0,0,0,2,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ];
+            mazeState = {
+                grid: layout,
+                px: 1,
+                py: 1,
+                timeLeft: 45
+            };
+        }
+
+        function moveMazePlayer(dx, dy) {
+            if (!gameState.running || activeGame !== 'maze') return;
+            const nx = mazeState.px + dx;
+            const ny = mazeState.py + dy;
+            const cell = mazeState.grid[ny] && mazeState.grid[ny][nx];
+            if (cell === 0 || cell === 2) {
+                mazeState.px = nx;
+                mazeState.py = ny;
+                gameState.score += 5;
+                playSound('paddle');
+                updateHud();
+
+                if (cell === 2) {
+                    const bonus = Math.ceil(mazeState.timeLeft) * 10;
+                    gameState.score += bonus;
+                    updateHud();
+                    triggerGameOver(`LABİRENTTEN KAÇTIN! (+${bonus} HIZ BONUSU)`, true);
+                }
+            }
+        }
+
+        function updateMaze(dt) {
+            mazeState.timeLeft -= dt / 1000;
+            if (mazeState.timeLeft <= 0) {
+                mazeState.timeLeft = 0;
+                gameState.lives = 0;
+                updateHud();
+                triggerGameOver('LABİRENT SÜRESİ DOLDU!');
+            }
+        }
+
+        function drawMaze() {
+            drawIdleBackdrop();
+            ctx.font = '13px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffe600';
+            ctx.fillText(`KALAN SÜRE: ${Math.ceil(mazeState.timeLeft)}sn`, LOGICAL_W / 2, 42);
+
+            const cols = 15, rows = 11;
+            const tile = 32;
+            const sx = (LOGICAL_W - cols * tile) / 2;
+            const sy = 65;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const v = mazeState.grid[r][c];
+                    const x = sx + c * tile;
+                    const y = sy + r * tile;
+                    if (v === 1) {
+                        ctx.fillStyle = '#1d1d42';
+                        ctx.fillRect(x, y, tile, tile);
+                        ctx.strokeStyle = '#00f3ff';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, tile, tile);
+                    } else if (v === 2) {
+                        ctx.fillStyle = 'rgba(57, 255, 20, 0.25)';
+                        ctx.fillRect(x, y, tile, tile);
+                        ctx.font = '20px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('🚪', x + tile / 2, y + tile / 2 + 7);
+                    }
+                }
+            }
+
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🕹️', sx + mazeState.px * tile + tile / 2, sy + mazeState.py * tile + tile / 2 + 7);
+        }
+
+        /* --------------------------------------------------------------------------
+           MAIN GAME LOOP
+           -------------------------------------------------------------------------- */
+        function gameLoop(now) {
+            if (!gameState.running || gameState.paused) return;
+            const dt = Math.min(now - gameState.lastTime, 50);
+            gameState.lastTime = now;
+
+            if (activeGame === 'snake') {
+                updateSnake(dt);
+                if (gameState.running) drawSnake();
+            } else if (activeGame === 'invaders') {
+                updateInvaders(dt);
+                if (gameState.running) drawInvaders();
+            } else if (activeGame === 'breakout') {
+                updateBreakout(dt);
+                if (gameState.running) drawBreakout();
+            } else if (activeGame === 'xox') {
+                drawXox();
+            } else if (activeGame === 'memory') {
+                updateMemory(dt);
+                if (gameState.running) drawMemory();
+            } else if (activeGame === 'pong') {
+                updatePong(dt);
+                if (gameState.running) drawPong();
+            } else if (activeGame === 'mines') {
+                drawMines();
+            } else if (activeGame === 'meteor') {
+                updateMeteor(dt);
+                if (gameState.running) drawMeteor();
+            } else if (activeGame === 'flappy') {
+                updateFlappy(dt);
+                if (gameState.running) drawFlappy();
+            } else if (activeGame === 'g2048') {
+                draw2048();
+            } else if (activeGame === 'simon') {
+                drawSimon();
+            } else if (activeGame === 'reflex') {
+                updateReflex(dt);
+                if (gameState.running) drawReflex();
+            } else if (activeGame === 'frogger') {
+                updateFrogger(dt);
+                if (gameState.running) drawFrogger();
+            } else if (activeGame === 'racer') {
+                updateRacer(dt);
+                if (gameState.running) drawRacer();
+            } else if (activeGame === 'hangman') {
+                drawHangman();
+            } else if (activeGame === 'blackjack') {
+                drawBlackjack();
+            } else if (activeGame === 'battleship') {
+                drawBattleship();
+            } else if (activeGame === 'maze') {
+                updateMaze(dt);
+                if (gameState.running) drawMaze();
+            }
+
+            if (gameState.running) {
+                gameState.rafId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Initialize on window load
+        window.onload = function () {
+            document.getElementById('playerNameInput').value = getPlayerName();
+            resizeCanvas();
+            filterCatalog('all');
+            renderLeaderboard();
+            switchGame('snake');
+        };
+    </script>
 </body>
 </html>
