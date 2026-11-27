@@ -355,6 +355,7 @@
                     <button onclick="switchGame('blackjack')" id="tab-blackjack" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🃏 16.21</button>
                     <button onclick="switchGame('battleship')" id="tab-battleship" class="arcade-btn arcade-btn-cyan px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🚢 17.RADAR</button>
                     <button onclick="switchGame('maze')" id="tab-maze" class="arcade-btn arcade-btn-yellow px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">🌀 18.LABİRENT</button>
+                    <button onclick="switchGame('chess')" id="tab-chess" class="arcade-btn arcade-btn-pink px-2.5 py-2 rounded-lg text-[8px] sm:text-[9px] opacity-75">♟️ 19.SATRANÇ</button>
                 </div>
             </div>
 
@@ -533,6 +534,7 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script>
         /* ==========================================================================
            1. WEB AUDIO API RETRO SOUND SYNTHESIZER (8-BIT SFX)
@@ -926,7 +928,8 @@
             hangman: { title: '15. KELİME AVI (1985)', badge: '🔤', hint: 'Alttaki harf tuşlarına veya klavyeye bas!', desc: 'Gizli Türkçe kelimeyi 6 hak dolmadan tahmin et!' },
             blackjack: { title: '16. ZAR & 21 BLACKJACK (1986)', badge: '🃏', hint: 'ATEŞ ile Kart Çek, KAL butonuyla elini durdur!', desc: '21 sayısını geçmeden kasadan yüksek puan al!' },
             battleship: { title: '17. SAVAŞ GEMİSİ RADARI (1989)', badge: '🚢', hint: '6x6 radarda karelere tıkla veya D-Pad + ATEŞ!', desc: '20 atış hakkıyla 6x6 denizdeki gizli gemileri batır!' },
-            maze: { title: '18. LABİRENT KAÇIŞI (1983)', badge: '🌀', hint: 'Yön tuşları veya D-Pad ile çıkış kapısına ulaş!', desc: 'Süre dolmadan labirentten çıkıp bonus puan kazan!' }
+            maze: { title: '18. LABİRENT KAÇIŞI (1983)', badge: '🌀', hint: 'Yön tuşları veya D-Pad ile çıkış kapısına ulaş!', desc: 'Süre dolmadan labirentten çıkıp bonus puan kazan!' },
+            chess: { title: '19. NEON SATRANÇ', badge: '♟️', hint: 'Taşa tıkla, sonra gideceği kareye tıkla!', desc: "CPU'ya karşı veya iki kişilik satranç oyna. İki kişilik modda tahta sıraya göre döner." }
         };
 
         const ALL_GAME_IDS = Object.keys(GAME_CONFIGS);
@@ -972,6 +975,8 @@
                 handleReflexClick(pos.x, pos.y);
             } else if (activeGame === 'battleship') {
                 handleBattleshipClick(pos.x, pos.y);
+            } else if (activeGame === 'chess') {
+                handleChessClick(pos.x, pos.y);
             }
         });
 
@@ -1172,6 +1177,9 @@
             } else if (activeGame === 'mines') {
                 btn.classList.remove('hidden');
                 btn.textContent = minesState.flagMode ? '🚩 BAYRAK MODU: AÇIK' : '⛏️ KAZI MODU: AÇIK';
+            } else if (activeGame === 'chess') {
+                btn.classList.remove('hidden');
+                btn.textContent = chessState.mode === 'cpu' ? "🤖 MOD: CPU'YA KARŞI" : '👥 MOD: 2 KİŞİLİK';
             } else {
                 btn.classList.add('hidden');
             }
@@ -1250,6 +1258,7 @@
             if (activeGame === 'blackjack') initBlackjack();
             if (activeGame === 'battleship') initBattleship();
             if (activeGame === 'maze') initMaze();
+            if (activeGame === 'chess') initChess();
 
             updateExtraModeButton();
             updateHud();
@@ -1322,7 +1331,106 @@
         function initBreakout(){classicState={paddle:270,ball:{x:320,y:400,vx:3,vy:-3},bricks:Array.from({length:4},(_,r)=>Array.from({length:10},(_,c)=>({x:34+c*58,y:55+r*25,alive:true}))).flat()};}
         function updateBreakout(){const s=classicState;if(keys.ArrowLeft)s.paddle=Math.max(0,s.paddle-6);if(keys.ArrowRight)s.paddle=Math.min(560,s.paddle+6);s.ball.x+=s.ball.vx;s.ball.y+=s.ball.vy;if(s.ball.x<5||s.ball.x>635)s.ball.vx*=-1;if(s.ball.y<5)s.ball.vy*=-1;if(s.ball.y>430&&s.ball.x>s.paddle&&s.ball.x<s.paddle+80)s.ball.vy=-Math.abs(s.ball.vy);for(const b of s.bricks)if(b.alive&&s.ball.x>b.x&&s.ball.x<b.x+52&&s.ball.y>b.y&&s.ball.y<b.y+18){b.alive=false;s.ball.vy*=-1;gameState.score+=20;updateHud();}if(s.ball.y>480){gameState.lives--;updateHud();if(gameState.lives<=0)triggerGameOver('TOPU KAÇIRDIN!');else initBreakout();}if(!s.bricks.some(b=>b.alive))triggerGameOver('TUĞLALAR KIRILDI!',true);}
         function drawBreakout(){drawIdleBackdrop();const s=classicState;s.bricks.forEach(b=>{if(b.alive){ctx.fillStyle='#ff2a85';ctx.fillRect(b.x,b.y,52,18);}});ctx.fillStyle='#00f3ff';ctx.fillRect(s.paddle,445,80,10);ctx.fillStyle='#ffe600';ctx.beginPath();ctx.arc(s.ball.x,s.ball.y,7,0,Math.PI*2);ctx.fill();}
-        function toggleExtraMode(){showToast('BİLGİ','Bu oyun için ekstra mod bulunmuyor.');}
+        let chessState = { game: null, mode: 'cpu', orientation: 'w', selected: null, aiThinking: false };
+        const CHESS_PIECES = { p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', P:'♙', R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔' };
+
+        function initChess() {
+            if (typeof Chess !== 'function') { showToast('HATA', 'Satranç motoru yüklenemedi. İnternet bağlantısını kontrol et.'); return; }
+            chessState.game = new Chess();
+            chessState.orientation = 'w';
+            chessState.selected = null;
+            chessState.aiThinking = false;
+        }
+
+        function toggleExtraMode() {
+            if (activeGame === 'chess') {
+                chessState.mode = chessState.mode === 'cpu' ? 'two' : 'cpu';
+                initChess();
+                updateExtraModeButton();
+                updateHud();
+                return;
+            }
+            if (activeGame === 'xox') { xoxState.vsCpu = !xoxState.vsCpu; initXox(); updateExtraModeButton(); return; }
+            if (activeGame === 'mines') { minesState.flagMode = !minesState.flagMode; updateExtraModeButton(); return; }
+            showToast('BİLGİ', 'Bu oyun için ekstra mod bulunmuyor.');
+        }
+
+        function chessSquareFromPoint(px, py) {
+            const size = 360, sx = (LOGICAL_W - size) / 2, sy = 60;
+            if (px < sx || px >= sx + size || py < sy || py >= sy + size) return null;
+            const col = Math.floor((px - sx) / 45), row = Math.floor((py - sy) / 45);
+            const file = chessState.orientation === 'w' ? col : 7 - col;
+            const rank = chessState.orientation === 'w' ? 8 - row : row + 1;
+            return 'abcdefgh'[file] + rank;
+        }
+
+        function handleChessClick(px, py) {
+            if (!chessState.game || chessState.aiThinking || chessState.game.game_over()) return;
+            const square = chessSquareFromPoint(px, py);
+            if (!square || (chessState.mode === 'cpu' && chessState.game.turn() === 'b')) return;
+            const piece = chessState.game.get(square);
+            if (!chessState.selected) {
+                if (piece && piece.color === chessState.game.turn()) { chessState.selected = square; playSound('select'); }
+                return;
+            }
+            const move = chessState.game.move({ from: chessState.selected, to: square, promotion: 'q' });
+            if (!move) {
+                chessState.selected = piece && piece.color === chessState.game.turn() ? square : null;
+                return;
+            }
+            chessState.selected = null;
+            gameState.score += 10;
+            playSound('paddle');
+            if (chessState.mode === 'two') chessState.orientation = chessState.game.turn();
+            updateHud();
+            if (finishChessIfNeeded()) return;
+            if (chessState.mode === 'cpu' && chessState.game.turn() === 'b') setTimeout(chessCpuMove, 250);
+        }
+
+        function finishChessIfNeeded() {
+            if (!chessState.game.game_over()) return false;
+            let message = 'BERABERE!';
+            if (chessState.game.in_checkmate()) message = chessState.game.turn() === 'w' ? 'SİYAH KAZANDI!' : 'BEYAZ KAZANDI!';
+            triggerGameOver(message, chessState.game.in_checkmate() && chessState.game.turn() === 'w');
+            return true;
+        }
+
+        function chessCpuMove() {
+            if (!gameState.running || activeGame !== 'chess' || chessState.mode !== 'cpu' || chessState.game.turn() !== 'b') return;
+            chessState.aiThinking = true;
+            const moves = chessState.game.moves({ verbose: true });
+            if (!moves.length) { chessState.aiThinking = false; finishChessIfNeeded(); return; }
+            moves.sort((a, b) => (b.captured ? 10 : 0) - (a.captured ? 10 : 0));
+            const move = moves[Math.floor(Math.random() * Math.min(3, moves.length))];
+            chessState.game.move({ from: move.from, to: move.to, promotion: 'q' });
+            chessState.aiThinking = false;
+            chessState.orientation = 'w';
+            playSound('paddle');
+            if (!finishChessIfNeeded()) updateHud();
+        }
+
+        function drawChess() {
+            drawIdleBackdrop();
+            const size = 360, cell = 45, sx = (LOGICAL_W - size) / 2, sy = 60;
+            ctx.textAlign = 'center';
+            ctx.font = '12px "Press Start 2P"';
+            ctx.fillStyle = '#ffe600';
+            ctx.fillText(chessState.mode === 'cpu' ? 'BEYAZ: SEN  •  SİYAH: CPU' : (chessState.game.turn() === 'w' ? 'SIRA: BEYAZ' : 'SIRA: SİYAH'), LOGICAL_W / 2, 35);
+            for (let row = 0; row < 8; row++) for (let col = 0; col < 8; col++) {
+                const file = chessState.orientation === 'w' ? col : 7 - col;
+                const rank = chessState.orientation === 'w' ? 8 - row : row + 1;
+                const square = 'abcdefgh'[file] + rank;
+                const light = (file + rank) % 2 === 0;
+                ctx.fillStyle = light ? '#b7e7e8' : '#314f78';
+                ctx.fillRect(sx + col * cell, sy + row * cell, cell, cell);
+                if (chessState.selected === square) { ctx.fillStyle = 'rgba(255,230,0,.65)'; ctx.fillRect(sx + col * cell, sy + row * cell, cell, cell); }
+                const piece = chessState.game && chessState.game.get(square);
+                if (piece) { ctx.font = '36px serif'; ctx.fillStyle = piece.color === 'w' ? '#fff' : '#111'; ctx.shadowColor = piece.color === 'w' ? '#111' : '#fff'; ctx.shadowBlur = 3; ctx.fillText(CHESS_PIECES[piece.color === 'w' ? piece.type.toUpperCase() : piece.type], sx + col * cell + cell / 2, sy + row * cell + 35); ctx.shadowBlur = 0; }
+            }
+            ctx.font = '11px "Press Start 2P"';
+            ctx.fillStyle = '#39ff14';
+            ctx.fillText('TAŞ SEÇ → HEDEF KAREYE TIKLA', LOGICAL_W / 2, 455);
+        }
 
         let xoxState = {
             board: Array(9).fill(null),
@@ -3207,6 +3315,8 @@
             } else if (activeGame === 'maze') {
                 updateMaze(dt);
                 if (gameState.running) drawMaze();
+            } else if (activeGame === 'chess') {
+                drawChess();
             }
 
             if (gameState.running) {
